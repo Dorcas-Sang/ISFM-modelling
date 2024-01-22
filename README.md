@@ -8,6 +8,9 @@ In this repository a holistic model will be developed, translating a conceptual 
 
 **The first draft of the model depicts an ex-ante economic evaluation and expected utility theory of ISFM**
 
+------------------------------------------------------------------------------------------------------------
+
+
 <img width="814" alt="ISFM-model" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/aad7fb97-1b4f-4d59-82b5-e6c1acc91f5f">
 
 
