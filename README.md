@@ -6,7 +6,8 @@ The Horticultural Science group of Prof. Dr. Luedeling will contribute to the IN
 
 In this repository a holistic model will be developed, translating a conceptual model to a mathematical model. The model incorporates the benefits, the costs, and the risks related to ISFM. The benefits are associated with the 5 indicators of the Sustainable Intensification Assessment Framework (SIAF) which are productivity, economic, human, environmental, and social domains (Musumba et al., 2017). The productivity domain will look at the yield of the associated crops, the economic will focus on the monetary return of crops, the human domain will assess the impact on nutrition and food security, the social domain will focus on gender and cultural norms, while the environmental domain will assess the impact on soil fertility (Kihara et al., 2022).
 
-The first draft of the model depicts an ex-ante economic evaluation and expected utility theory of ISFM
+**The first draft of the model depicts an ex-ante economic evaluation and expected utility theory of ISFM**
+
 <img width="814" alt="ISFM-model" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/aad7fb97-1b4f-4d59-82b5-e6c1acc91f5f">
 
 
