@@ -11,7 +11,7 @@ In this repository a holistic model will be developed, translating a conceptual 
 ------------------------------------------------------------------------------------------------------------
 
 
-<img width="814" alt="ISFM-model" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/aad7fb97-1b4f-4d59-82b5-e6c1acc91f5f">
+<img width="743" alt="Current-Conceptual-model" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/8caeb34d-9afd-404d-9bea-1d04929d18ca">
 
 
 
