@@ -1,0 +1,15 @@
+variable,distribution,lower,median,upper,description,Label
+years,const,25,,25,Time interval,Years
+discount_rate,const,5,,5,Discount rate (%),Discount rate
+var_cv,posnorm,5,,10,Variance variables (%),Coefficient of variation
+maize_yield,posnorm,2,,4,Maize yield (t/ha),Maize yield 
+soybean_yield,posnorm,2.5,,3.5,Soybean yield (t/ha),Soybean yield
+maize_price,posnorm,6088,,7000,Maize price (Ghc/t),Maize price
+soybean_price,posnorm,3368,,5000,soybean price (Ghc/t),Soybean price
+fertilizer,posnorm,240,,1200,Fertilizer price (Ghc),Fertilizer price
+seed,posnorm,300,,1200,Seed price (Ghc),Seed price
+pesticide,posnorm,120,,300,Pesticide price (Ghc),Pesticide price
+equipements,posnorm,400,,1220,Equipements price (Ghc),Equipment price
+land,posnorm,860,,1000,Land preparation and maintenance price (Ghc),Land maintenance
+planting_harvest,posnorm,1200,,1900,Labor for planting and harvest (Ghc),Labor cots
+transport,posnorm,500,,1200,Transport price (Ghc),Transport costs
