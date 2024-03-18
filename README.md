@@ -6,12 +6,12 @@ The [Horticultural Science](https://www.gartenbauwissenschaft.uni-bonn.de/) grou
 
 In this repository a holistic model will be developed, translating a conceptual model to a mathematical model. The model incorporates the benefits, the costs, and the risks related to ISFM on a maize-soybean rotation system. The benefits are associated with the 5 indicators of the Sustainable Intensification Assessment Framework (SIAF) which are productivity, economic, human, environmental, and social domains (Musumba et al., 2017). The productivity domain will look at the yield of the associated crops, the economic will focus on the monetary return of crops, the human domain will assess the impact on nutrition and food security, the social domain will focus on gender and cultural norms, while the environmental domain will assess the impact on soil fertility (Kihara et al., 2022).
 
-**The first draft of the conceptual model depicts an ex-ante economic evaluation of ISFM**
+** Conceptual model of cost-benefit analysis incorporating risk factors for ISFM in Northern Ghana. **
 
 ------------------------------------------------------------------------------------------------------------
 
 
-<img width="743" alt="Current-Conceptual-model" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/8caeb34d-9afd-404d-9bea-1d04929d18ca">
+<img width="899" alt="image" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/2b79d200-f399-4039-bbf2-c95d2b499f96">
 
 
 
