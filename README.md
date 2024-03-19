@@ -10,7 +10,8 @@ In this repository a holistic model will be developed, translating a conceptual 
 
 ------------------------------------------------------------------------------------------------------------
 
-<img width="899" alt="image" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/1ef72008-8d6b-46a6-bc16-566e0edf3260">
+<img width="895" alt="image" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/27e53cd1-ae97-4204-ac1a-15d09ba4ec24">
+
 
 
 The conceptual model depicts the move from a few components toward complete ISFM as adapted by Vanlauwe et al. (2010)
