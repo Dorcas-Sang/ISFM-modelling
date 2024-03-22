@@ -633,7 +633,7 @@ return(list(NPV_Comp1 = NPV_comp1,
 }
 
 
-####Monte Carlo simulation 
+####Monte Carlo simulation
 mc_simulation <- mcSimulation(as.estimate(table), 
                               model_function = system_benefits,
                               numberOfModelRuns = 1000,
