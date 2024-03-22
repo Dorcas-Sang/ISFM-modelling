@@ -70,7 +70,7 @@ land_risks <- chance_event(land_risk,
 
 #Probability of unavailability of fertilizer in the market as well as 
 #Chance of Price fluctuation * inflation
-market_risks <- chance_event(availability_risk, 
+market_risks <- chance_event(market_risk, 
                                     value_if = 1,
                                     n= years)
 
@@ -150,7 +150,7 @@ saved_carbon<- (saved_carbon * carbon_payment)/ exchange_rate
 
 biodiversty <- vv (var_mean = biodiversity_index,
                 var_CV = var_cv, 
-                n= years) * farmers_risks * land_risks ### % microbes below and above ground
+                n= years) * farmers_risks * land_risks ### shannon diversity index of species below and above ground
 
 biodiversity <- (biodiversity * biodiversity_index_value)/ exhange_rate
 
@@ -229,7 +229,7 @@ infiltration <- vv (infiltration_rate,
                     var_CV = var_cv,
                     n= years)* soil_compaction
 
-infiltration_rate <- (infiltration * money_saved_for_tractor)/ exchange_rate
+infiltration_rate <- (infiltration * tractor)/ exchange_rate
 
 #If there is high infiltration rate the inputs will not be washed away. 
 #This rate increases with less stress on the land created by use of tractor
@@ -248,7 +248,7 @@ social_inclusion <- vv (var_mean = percentage_farmers_bonding,
                         n= years)* farmers_risks * land_risks
 
 social_inclusion <- (social_inclusion * saved_labor_cost 
-                     *saved_money_group_savings)/ exchange_rate
+                     *money_group_savings)/ exchange_rate
 
 #If more farmers are included and do the same practice, they can create more activities together that will save them some money. 
 #For example helping each other in farm activities, and group savings can allow farmers to start a side business that will generate off-farm income
@@ -297,7 +297,7 @@ total_benefit_5 <- maize_income + soybean_income + saved_carbon
 ##Purchased inputs 
 inputs_1 <- (seed + pesticide + equipements)
 
-inputs_1 <- vv (var_mean = purchased_inputs, 
+inputs_1 <- vv (var_mean = inputs_1, 
               var_CV = var_cv,
               n= years, 
               relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -306,7 +306,7 @@ inputs_1 <- vv (var_mean = purchased_inputs,
 land_costs_1 <- (preparation + planting + maintainance + 
                  harvest + clearing) 
 
-land_costs_1 <- vv (var_mean = land_costs,
+land_costs_1 <- vv (var_mean = land_costs_1,
                   var_CV = var_cv,
                   n= years, 
                   relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -315,7 +315,7 @@ land_costs_1 <- vv (var_mean = land_costs,
 other_costs_1 <- (transport + learning_time + fuel 
                + medical_cost)
 
-other_costs_1 <- vv (var_mean = other_costs,
+other_costs_1 <- vv (var_mean = other_costs_1,
                    var_CV = var_cv,
                    n= years, 
                    relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -325,19 +325,19 @@ total_cost_1 <- inputs_1 + land_costs_1 + other_costs_1
 
 
 #Component 2
-inputs_costs2 <- (seed + manure + crop_residue + pesticide + equipements)
+inputs_2 <- (seed + manure + crop_residue + pesticide + equipements)
 
 #For farmers who manage their crop residue and own livestock 
 
-inputs_costs2 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
+inputs_2 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
   
-inputs_costs2 = inputs_costs2 * cost_reduced_own_organic
+inputs_2 = inputs_2 * cost_reduced_own_organic
 } else {
-  inputs_costs2 = inputs_costs2 
+  inputs_2 = inputs_2 
 }
 
 
-inputs_2 <- vv (var_mean = inputs_costs2, 
+inputs_2 <- vv (var_mean = inputs_2, 
                 var_CV = var_cv,
                 n= years, 
                 relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -346,7 +346,7 @@ inputs_2 <- vv (var_mean = inputs_costs2,
 land_costs_2 <- (preparation + planting + maintainance + 
                    harvest + clearing) 
 
-land_costs_2 <- vv (var_mean = land_costs,
+land_costs_2 <- vv (var_mean = land_costs_2,
                     var_CV = var_cv,
                     n= years, 
                     relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -355,7 +355,7 @@ land_costs_2 <- vv (var_mean = land_costs,
 other_costs_2 <- (transport + OF_preparation + learning_time + fuel 
                   + medical_cost)
 
-other_costs_2 <- vv (var_mean = other_costs,
+other_costs_2 <- vv (var_mean = other_costs_2,
                      var_CV = var_cv,
                      n= years, 
                      relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -367,7 +367,7 @@ total_cost_2 <- inputs_2 + land_costs_2 + other_costs_2
 
 inputs_3 <- (seed + mineral_fertilizer + pesticide + equipements)
 
-inputs_3 <- vv (var_mean = purchased_inputs, 
+inputs_3 <- vv (var_mean = inputs_3, 
                 var_CV = var_cv,
                 n= years, 
                 relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -376,7 +376,7 @@ inputs_3 <- vv (var_mean = purchased_inputs,
 land_costs_3 <- (preparation + planting + maintainance + 
                    harvest + clearing) 
 
-land_costs_3 <- vv (var_mean = land_costs,
+land_costs_3 <- vv (var_mean = land_costs_3,
                     var_CV = var_cv,
                     n= years, 
                     relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -384,7 +384,7 @@ land_costs_3 <- vv (var_mean = land_costs,
 other_costs_3 <- (transport + fertilizer_application + learning_time + fuel 
                   + medical_cost)
 
-other_costs_3 <- vv (var_mean = other_costs,
+other_costs_3 <- vv (var_mean = other_costs_3,
                      var_CV = var_cv,
                      n= years, 
                      relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -400,14 +400,14 @@ inputs_4 <- (seed + manure + crop_residue +
 
 #For farmers who manage their crop residue and own livestock 
 
-inputs_costs4 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
+inputs_4 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
   
-  inputs_costs4 = inputs_costs4 * cost_reduced_own_organic
+  inputs_4 = inputs_4 * cost_reduced_own_organic
 } else {
-  inputs_costs4 = inputs_costs4
+  inputs_4 = inputs_4
 }
 
-inputs_4 <- vv (var_mean = inputs_costs4, 
+inputs_4 <- vv (var_mean = inputs_4, 
                 var_CV = var_cv,
                 n= years, 
                 relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -416,7 +416,7 @@ inputs_4 <- vv (var_mean = inputs_costs4,
 land_costs_4 <- (preparation + planting + maintainance + 
                   harvest + clearing) 
 
-land_costs_4 <- vv (var_mean = land_costs,
+land_costs_4 <- vv (var_mean = land_costs_4,
                      var_CV = var_cv,
                      n= years, 
                    relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -424,7 +424,7 @@ land_costs_4 <- vv (var_mean = land_costs,
 other_costs_4 <- (transport + learning_time + fuel 
                  + OF_preparation + fertilizer_application+ medical_cost)
  
-other_costs_4 <- vv (var_mean = other_costs,
+other_costs_4 <- vv (var_mean = other_costs_4,
                     var_CV = var_cv,
                     n= years, 
                     relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -440,15 +440,15 @@ inputs_5 <- (seed + manure + crop_residue +
 
 #For farmers who manage their crop residue and own livestock 
 
-inputs_costs5 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
+inputs_5 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
   
-  inputs_costs5 = inputs_costs5 * cost_reduced_own_organic
+  inputs_5 = inputs_5 * cost_reduced_own_organic
 } else {
-  inputs_costs5 = inputs_costs5 
+  inputs_5 = inputs_5 
 }
 
 
-inputs_5 <- vv (var_mean = inputs_costs5, 
+inputs_5 <- vv (var_mean = inputs_5, 
                 var_CV = var_cv,
                 n= years, 
                 relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -458,7 +458,7 @@ inputs_5 <- vv (var_mean = inputs_costs5,
 land_costs_5 <- (preparation + planting + maintainance + 
                    harvest + clearing) 
 
-land_costs_5 <- vv (var_mean = land_costs,
+land_costs_5 <- vv (var_mean = land_costs_5,
                     var_CV = var_cv,
                     n= years, 
                     relative_trend = inflation)/ exchange_rate #percentage of increase each year
@@ -466,7 +466,7 @@ land_costs_5 <- vv (var_mean = land_costs,
 other_costs_5 <- (transport + learning_time + fuel 
                   + OF_preparation + fertilizer_application+ medical_cost)
 
-other_costs_5 <- vv (var_mean = other_costs,
+other_costs_5 <- vv (var_mean = other_costs_5,
                      var_CV = var_cv,
                      n= years, 
                      relative_trend = inflation)/ exchange_rate #percentage of increase each year
