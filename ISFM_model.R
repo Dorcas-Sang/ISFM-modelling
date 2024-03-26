@@ -24,8 +24,8 @@ make_variables <- (as.estimate(table))
 #### ISFM components ####
 
 #comp1. Improved Germplasm (IG)
-#comp2. IG + Organic fertilizer (IG + 0F)
-#comp3. IG + Inorganic fertilizer (IG + IF)
+#comp2. IG + Inorganic fertilizer (IG + IF)
+#comp3. IG + Organic fertilizer (IG + 0F)
 #comp4. IG + OF + IF
 #comp5. IG + OF + IF + Minimum/zero tillage (M/Z T)
 
@@ -39,68 +39,54 @@ system_benefits <- function(x, varnames){
 
 #All the risks associated with maize in every cropping season
   
-#maize_risks <- min(if_failed_germination,
-                     #if_elnino,
-                     #if_drought,
-                     #if_theft)
+maize_risks <- max(if_failed_germination,
+                     if_elnino,
+                     if_drought,
+                     if_theft,
+                   if_poor_seed) #Susceptible to pest and diseases
 
-##OR##
 
-maize_risks <- chance_event(maize_risk,
-                            value_if = 1,
-                            n= years)
 
 #All the risks associated with soybean in every cropping season  
-#soybean_risks <- min(if_failed_germination,
-                   #if_elnino,
-                   #if_drought,
-                   #if_theft)
 
-##OR##
+soybean_risks <- max(if_failed_germination,
+                   if_elnino,
+                   if_drought,
+                   if_theft,
+                   if_poor_seed, 
+                   if_poor_N) #poor Nitrogen fixer and susceptible to pest and diseases
 
-soybean_risks <- chance_event(soybean_risk, 
-                              value_if = 1,
-                              n= years)
+
 
 #Chance of land litigation happening
-land_risks <- chance_event(land_risk, 
-                                value_if = 1,
-                                n= years)
-
+land_risks <- max(if_land_litigation)
+  
 
 #Probability of unavailability of fertilizer in the market as well as 
 #Chance of Price fluctuation * inflation
-market_risks <- chance_event(market_risk, 
-                                    value_if = 1,
-                                    n= years)
+market_risks <- max(if_unavailability, 
+                    if_inflation)
+  
 
 #Probability that there will be competition for crop residue use 
-competing_interest <- chance_event(crop_residue_risk, 
-                                   value_if = 1,
-                                   n= years) 
+competing_interest <- max(if_competition)
+  
 
 #Chances that farmers will not trust extension officers and 
 #have the patience  to wait to see the long term benefits 
 
-#farmers_risks <- min(if_no_trust,
-                     #if_no_patience,
-                     #if_no_knowledge,
-                     #if_violence,
-                     #if_no_acceptance)
-
-## OR ###
-
-farmers_risks <- chance_event(farmers_risk, 
-                      value_if = 1,
-                      n= years)
+farmers_risks <- max(if_no_trust,
+                     if_no_patience,
+                     if_no_knowledge,
+                     if_violence,
+                     if_no_acceptance)
 
 
 #Chances that livestock/humans might walk into the fields and compact the soil
-soil_compaction <- chance_event(compaction_risk, 
-                                value_if = 1,
-                                n= years)
+soil_risks <- max(if_compaction)
+  
 
-#### Systems benefits of Component 1,2,3,4,5 ####  
+#### Systems benefits of Component 1,2,3,4,5 of ISFM ####  
 
 #Maize 
 
@@ -113,8 +99,7 @@ maize_residue <- vv (var_mean = maize_residue,
                      var_CV = var_cv, 
                      n= years) * competing_interest  #biomass in t/ha
 
-maize_income <- (maize_yield * maize_price) + (maize_residue* residue_price)
-/ exhange_rate
+maize_income <- (maize_yield * maize_price) + (maize_residue * residue_price)/exhange_rate
 
 
 #soybean
@@ -128,8 +113,7 @@ soybean_residue <- vv (var_mean = soybean_residue,
                        var_CV = var_cv, 
                        n= years) * competing_interest #biomass in t/ha
 
-soybean_income <- (soybean_yield * soybean_price) + (soybean_residue * residue_price)
-/ exchange_rate
+soybean_income <- (soybean_yield * soybean_price) + (soybean_residue * residue_price)/exchange_rate
 
   
 ## Other benefits that increase ISFM NPV ##
@@ -188,7 +172,7 @@ soil_nutrient_replenishment <- vv (var_mean = nutrient,
 nutrient_replenished <- (soil_nutrient_replenishment * fertilizer_price)/ exchange_rate
 
 
-stress_resistance <- vv (var_mean = reduced_pesticide,
+stress_resistance <- vv (var_mean = percent_reduced_pesticide,
                          var_CV = var_cv,
                          n= years) * soybean_risks * maize_risks
 
@@ -227,9 +211,9 @@ reduced_GHG <- (GHG * payment_GHG)/exchange_rate
 
 infiltration <- vv (infiltration_rate,
                     var_CV = var_cv,
-                    n= years)* soil_compaction
+                    n= years)* soil_risks
 
-infiltration_rate <- (infiltration * tractor)/ exchange_rate
+infiltration_rate <- (infiltration * tractor_service)/ exchange_rate
 
 #If there is high infiltration rate the inputs will not be washed away. 
 #This rate increases with less stress on the land created by use of tractor
@@ -237,7 +221,7 @@ infiltration_rate <- (infiltration * tractor)/ exchange_rate
 
 weed_suppression <-vv (percentage_weed,
                        var_CV = var_cv,
-                       n= years)* soil_compaction
+                       n= years)* soil_risks
 
 weed_suppression<- (weed_suppression * weed_management_price)/ exchange_rate
   
@@ -254,7 +238,7 @@ social_inclusion <- (social_inclusion * saved_labor_cost
 #For example helping each other in farm activities, and group savings can allow farmers to start a side business that will generate off-farm income
 
   
-knowledge <- vv(var_mean = knowledge_gained,
+knowledge <- vv(var_mean = knowledge_gained, #Each component of ISFM comes with new technique and knowledge
                  var_CV = var_cv, 
                  n= years) * farmers_risks
 
@@ -267,53 +251,77 @@ knowledge <- (knowledge * training_price)/ exchange_rate
 total_benefit_1 <- maize_income + soybean_income + saved_Nitrogen 
                     + food_availability + knowledge + social_inclusion + nutrition
                   
-  
+
 total_benefit_2 <- maize_income + soybean_income + saved_Nitrogen 
+                  + food_availability + knowledge + social_inclusion
+                  + nutrient_replenished + nutrition + stress_resistance
+
+  
+total_benefit_3 <- maize_income + soybean_income + saved_Nitrogen 
                   + food_availability + knowledge + social_inclusion + nutrition
                   + saved_carbon + saved_water + reduced_GHG + biodiversity
                   + reduced_leaching + erosion_control 
 
 
-total_benefit_3 <- maize_income + soybean_income + saved_Nitrogen 
-                  + food_availability + knowledge + social_inclusion
-                  + nutrient_replenished + nutrition + stress_resistance
-
-
-total_benefit_4 <- maize_income + soybean_income + saved_carbon
-                  + saved_water + reduced_GHG + biodiversity+ reduced_leaching 
+total_benefit_4 <- maize_income + soybean_income + saved_Nitrogen +
+                  + saved_carbon + food_availability + knowledge + social_inclusion
+                  + nutrition + saved_water + reduced_GHG + biodiversity+ reduced_leaching 
                   + erosion_control + nutrient_replenished + nutrition + stress_resistance
 
   
-total_benefit_5 <- maize_income + soybean_income + saved_carbon
+total_benefit_5 <- maize_income + soybean_income + saved_Nitrogen +
+                  + saved_carbon + food_availability + knowledge + social_inclusion
                   + saved_water + reduced_GHG + biodiversity+ reduced_leaching 
                   + erosion_control + nutrient_replenished + nutrition 
-                  + stress_resistance + infiltration + weed_suppression 
+                  + stress_resistance + infiltration + weed_suppression
+
 
 
 #### Costs of ISFM ####
 
-#Component 1 
+#farmers work a lot so they sometimes have pain and may need to buy painkiller
+#This cost applies to all component of ISFM but would increase as component number increase
+#Probably the chance of pain comes with high number of ISFM component
+
+pain_yes_no <- chance_event(if_pain, 
+                            value_if = 1,
+                            value_if_not = 0)
+
+pain_killer_cost <- if(pain_yes_no ==1){
+  pain_killer_cost= tablet_cost * pain_days #Number of days farmers might experience pain in a cropping season 
+}else{
+  pain_killer_cost = 0 #Zero cost if no pain or denial for feeling pain or resistance to medecine
+}
+
+
+#Component 1 (IG)
 
 ##Purchased inputs 
-inputs_1 <- (seed + pesticide + equipements)
+inputs_1 <- (seed + pesticide 
+             + equipements) #equipment here are cutlass, hoe, wood and tiles for fencing etc 
 
 inputs_1 <- vv (var_mean = inputs_1, 
               var_CV = var_cv,
               n= years, 
-              relative_trend = inflation)/ exchange_rate #percentage of increase each year
+              relative_trend = inflation)/ exchange_rate #inflation: percentage of increase each year which is quite high in the case of Ghana
 
 ##Land operations and labor costs
 land_costs_1 <- (preparation + planting + maintainance + 
-                 harvest + clearing) 
+                 harvest + clearing + tractor) 
 
 land_costs_1 <- vv (var_mean = land_costs_1,
                   var_CV = var_cv,
                   n= years, 
-                  relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                  relative_trend = inflation)/ exchange_rate 
 
-#Other costs 
-other_costs_1 <- (transport + learning_time + fuel 
-               + medical_cost)
+#Other costs
+
+other_costs_1 <- (soil_testing + #Not very common but sometimes farmers have to do it if working with research institutes
+                                  #Not a direct cost to the farmers but it is part of the system
+                  transport+ #getting inputs from the market, and taking produce to the market 
+                  learning_time + #Time is money. Farmers need to make time for training but also more time to make sure they follow the correct planting practice
+                  fuel+ #Here fuel is the small token farmers usually give extension officers when they visit them 
+                  pain_killer_cost)
 
 other_costs_1 <- vv (var_mean = other_costs_1,
                    var_CV = var_cv,
@@ -324,134 +332,148 @@ total_cost_1 <- inputs_1 + land_costs_1 + other_costs_1
 
 
 
-#Component 2
-inputs_2 <- (seed + manure + crop_residue + pesticide + equipements)
+#component 2 (Improved Germplasm + Inorganic fertilizer)
 
-#For farmers who manage their crop residue and own livestock 
-
-inputs_2 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
-  
-inputs_2 = inputs_2 * cost_reduced_own_organic
-} else {
-  inputs_2 = inputs_2 
-}
-
+inputs_2 <- (seed + mineral_fertilizer + pesticide + equipements)
 
 inputs_2 <- vv (var_mean = inputs_2, 
                 var_CV = var_cv,
                 n= years, 
-                relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                relative_trend = inflation)/ exchange_rate
 
 ##Land operations and labor costs
 land_costs_2 <- (preparation + planting + maintainance + 
-                   harvest + clearing) 
+                   harvest + clearing + tractor) 
 
 land_costs_2 <- vv (var_mean = land_costs_2,
                     var_CV = var_cv,
                     n= years, 
-                    relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                    relative_trend = inflation)/ exchange_rate
 
 #Other costs 
-other_costs_2 <- (transport + OF_preparation + learning_time + fuel 
-                  + medical_cost)
 
-other_costs_2 <- vv (var_mean = other_costs_2,
+other_costs_2 <- (soil_testing + transport + fertilizer_application + learning_time + fuel 
+                  + pain_killer_cost)
+
+other_costs_2 <- vv (var_mean = other_costs_3,
                      var_CV = var_cv,
                      n= years, 
-                     relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                     relative_trend = inflation)/ exchange_rate 
 
 total_cost_2 <- inputs_2 + land_costs_2 + other_costs_2
 
 
-#component 3
 
-inputs_3 <- (seed + mineral_fertilizer + pesticide + equipements)
+#From component 3 onwards, Organic fertilizer is included in the system, hence that comes in as a cost 
+#Organic fertilizer is manure and crop residue combined 
+
+#Some/most farmers do not manage their crop residues and some others do not own livestock to have manure 
+#In such cases they have to buy in the market or outsource from neighbors at a small fee
+
+residue_managers_no <- chance_event(if_no_residue,
+                                       value_if = 1,
+                                       value_if_not = 0)
+
+crop_residue <- if(residue_managers_no == 1) {
+  crop_residue = residue_price * residue_quantity
+  } else { 
+  crop_residue = cost_own_residue # Zero cost to buy residue in this case
+ }
+
+
+own_livestock_no <- chance_event(if_no_livestock,
+                                     value_if = 1,
+                                     value_if_not = 0)
+
+manure <- if(own_livestock_no == 1) {
+  manure= manure_price * manure_quantity
+ } else { 
+  manure= cost_own_manure #Zero cost to buy manure in this case
+}
+
+
+#Component 3 (Improved germplasm and organic fertilizer)
+
+#Inputs
+inputs_3 <- (seed + manure + crop_residue + pesticide + equipements)
+
 
 inputs_3 <- vv (var_mean = inputs_3, 
                 var_CV = var_cv,
                 n= years, 
-                relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                relative_trend = inflation)/ exchange_rate
 
 ##Land operations and labor costs
 land_costs_3 <- (preparation + planting + maintainance + 
-                   harvest + clearing) 
+                   harvest + clearing+ tractor) 
 
 land_costs_3 <- vv (var_mean = land_costs_3,
                     var_CV = var_cv,
                     n= years, 
-                    relative_trend = inflation)/ exchange_rate #percentage of increase each year
-#Other costs 
-other_costs_3 <- (transport + fertilizer_application + learning_time + fuel 
-                  + medical_cost)
+                    relative_trend = inflation)/ exchange_rate 
+
+#Other costs
+other_costs_3 <- (soil_testing + transport + 
+                    OF_preparation + #Cost of preparing organic fertilizer mixing residue and manure before application
+                    learning_time + fuel 
+                  + pain_killer_cost)
 
 other_costs_3 <- vv (var_mean = other_costs_3,
                      var_CV = var_cv,
                      n= years, 
-                     relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                     relative_trend = inflation)/ exchange_rate
 
 total_cost_3 <- inputs_3 + land_costs_3 + other_costs_3
 
 
+#component 4 (IG + OF + IF)
 
-#component 4
-##Purchased inputs 
+#inputs 
+
 inputs_4 <- (seed + manure + crop_residue +
                          mineral_fertilizer + pesticide + equipements)
 
-#For farmers who manage their crop residue and own livestock 
-
-inputs_4 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
-  
-  inputs_4 = inputs_4 * cost_reduced_own_organic
-} else {
-  inputs_4 = inputs_4
-}
 
 inputs_4 <- vv (var_mean = inputs_4, 
                 var_CV = var_cv,
                 n= years, 
-                relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                relative_trend = inflation)/ exchange_rate
  
 ##Land operations and labor costs
+
 land_costs_4 <- (preparation + planting + maintainance + 
-                  harvest + clearing) 
+                  harvest + clearing + tractor) 
 
 land_costs_4 <- vv (var_mean = land_costs_4,
                      var_CV = var_cv,
                      n= years, 
-                   relative_trend = inflation)/ exchange_rate #percentage of increase each year
-#Other costs 
-other_costs_4 <- (transport + learning_time + fuel 
-                 + OF_preparation + fertilizer_application+ medical_cost)
+                   relative_trend = inflation)/ exchange_rate
+
+#Other costs
+
+other_costs_4 <- (soil_testing + transport + learning_time + fuel 
+                 + OF_preparation + fertilizer_application+ pain_killer_cost)
  
 other_costs_4 <- vv (var_mean = other_costs_4,
                     var_CV = var_cv,
                     n= years, 
-                    relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                    relative_trend = inflation)/ exchange_rate
 
 total_cost_4 <- inputs_4 + land_costs_4 + other_costs_4
 
 
-#component 5 #
+#component 5 (IG + OF+ IF + M/ZT)
 
-##Purchased inputs 
+#Inputs
+
 inputs_5 <- (seed + manure + crop_residue +
                          mineral_fertilizer + pesticide + equipements)
-
-#For farmers who manage their crop residue and own livestock 
-
-inputs_5 <- if (quantity_organic_fertilizer > reduced_organic_cost) {
-  
-  inputs_5 = inputs_5 * cost_reduced_own_organic
-} else {
-  inputs_5 = inputs_5 
-}
 
 
 inputs_5 <- vv (var_mean = inputs_5, 
                 var_CV = var_cv,
                 n= years, 
-                relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                relative_trend = inflation)/ exchange_rate
 
 
 ##Land operations and labor costs
@@ -461,15 +483,17 @@ land_costs_5 <- (preparation + planting + maintainance +
 land_costs_5 <- vv (var_mean = land_costs_5,
                     var_CV = var_cv,
                     n= years, 
-                    relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                    relative_trend = inflation)/ exchange_rate
+
+
 #Other costs 
-other_costs_5 <- (transport + learning_time + fuel 
-                  + OF_preparation + fertilizer_application+ medical_cost)
+other_costs_5 <- (soil_testing + transport + learning_time + fuel 
+                  + OF_preparation + fertilizer_application+ pain_killer_cost)
 
 other_costs_5 <- vv (var_mean = other_costs_5,
                      var_CV = var_cv,
                      n= years, 
-                     relative_trend = inflation)/ exchange_rate #percentage of increase each year
+                     relative_trend = inflation)/ exchange_rate
 
 total_cost_5 <- inputs_5 + land_costs_5 + other_costs_5
 
@@ -505,7 +529,7 @@ NPV_comp1 <- discount(bottomline_benefit_1, discount_rate = discount_rate,
 discount_total_benefit_1 <- discount(total_benefit_1,discount_rate, 
                                    calculate_NPV = TRUE)
 
-discount_total_cost_1 <- discount(total_cost_1, discount_rate, 
+discount_total_cost_1 <- discount(total_costs_1, discount_rate, 
                                 calculate_NPV = TRUE)
 
 ratio1 <- discount_total_benefit_1/discount_total_cost_1
@@ -529,7 +553,7 @@ NPV_comp2 <- discount(bottomline_benefit_2, discount_rate = discount_rate,
 discount_total_benefit_2 <- discount(total_benefit_2,discount_rate, 
                                      calculate_NPV = TRUE)
 
-discount_total_cost_2 <- discount(total_cost_2, discount_rate, 
+discount_total_cost_2 <- discount(total_costs_2, discount_rate, 
                                   calculate_NPV = TRUE)
 
 ratio2 <- discount_total_benefit_2/discount_total_cost_2
@@ -553,7 +577,7 @@ NPV_comp3 <- discount(bottomline_benefit_3, discount_rate = discount_rate,
 discount_total_benefit_3 <- discount(total_benefit_3,discount_rate, 
                                    calculate_NPV = TRUE)
 
-discount_total_cost_3 <- discount(total_cost_3, discount_rate, 
+discount_total_cost_3 <- discount(total_costs_3, discount_rate, 
                                 calculate_NPV = TRUE)
 
 ratio3 <- discount_total_benefit_3/discount_total_cost_3
@@ -577,7 +601,7 @@ NPV_comp4 <- discount(bottomline_benefit_4, discount_rate = discount_rate,
 discount_total_benefit_4 <- discount(total_benefit_4,discount_rate, 
                                      calculate_NPV = TRUE)
 
-discount_total_cost_4 <- discount(total_cost_4, discount_rate, 
+discount_total_cost_4 <- discount(total_costs_4, discount_rate, 
                                   calculate_NPV = TRUE)
 
 ratio4 <- discount_total_benefit_4/discount_total_cost_4
@@ -601,7 +625,7 @@ NPV_comp5 <- discount(bottomline_benefit_5, discount_rate = discount_rate,
 discount_total_benefit_5 <- discount(total_benefit_5,discount_rate, 
                                      calculate_NPV = TRUE)
 
-discount_total_cost_5 <- discount(total_cost_5, discount_rate, 
+discount_total_cost_5 <- discount(total_costs_5, discount_rate, 
                                   calculate_NPV = TRUE)
 
 ratio5 <- discount_total_benefit_5/discount_total_cost_5
@@ -646,4 +670,6 @@ write.csv(mc_simulation, "./mc_simulation_results.csv")
 ####PLOTTING####
 
 #MERGE THE CODE IN THE OTHER SCRIPT
+
+
 
