@@ -13,10 +13,15 @@ The conceptual model depicts the move from a few components toward complete ISFM
 
 
 NEW MODEL highlighting the economic (profit) and social (gender) outcomes
+
 <img width="752" alt="image" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/e60759df-dce4-47bf-9a3f-e9a9e169d43f">
+
+----------------------------------------------------------------------------------------------------------------------------
 
 
 OLD MODEL with the 5 indicators (productivity, economic, environmental, social and human domain)
+
+
 <img width="899" alt="image" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/402039ea-beb5-42b6-af3e-f0b22094a818">
 
 
