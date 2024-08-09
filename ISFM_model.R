@@ -234,7 +234,7 @@ total_cost_5 <- (component5_inputs + inputs_costs + labor+ manure + crop_residue
 
 maize_profit_sq <- vv (maize_yield_sq * maize_price, 
                     var_CV = var_cv, 
-                    n= years) * maize_risks * farmers_risks  #yield (t/ha) profit
+                    n= years) * maize_risks   #yield (t/ha) profit
 
 
 maize_residue_sq <- vv (maize_residue_sq * residue_price,
@@ -252,7 +252,7 @@ maize_income_sq <- (maize_profit_sq + maize_residue_sq) * market_risks
 
 maize_profit_1 <- vv (maize_yield_1 * maize_price, 
                     var_CV = var_cv, 
-                    n= years) * maize_risks * farmers_risks  #yield (t/ha) profit
+                    n= years) * maize_risks  #yield (t/ha) profit
 
 
 maize_residue_1 <- vv (maize_residue_1 * residue_price,
@@ -267,7 +267,7 @@ maize_income_1 <- (maize_profit_1 + maize_residue_1) * market_risks
 
 soybean_profit_1 <- vv (soybean_yield_1 * soybean_price, 
                       var_CV = var_cv, 
-                      n= years) * soybean_risks * farmers_risks #yield in t/ha
+                      n= years) * soybean_risks  #yield in t/ha
 
 
 soybean_residue_1 <- vv (soybean_residue_1 * residue_price,
@@ -283,7 +283,7 @@ soybean_income_1 <- (soybean_profit_1 + soybean_residue_1)* market_risks
 
 maize_profit_2 <- vv (maize_yield_2 * maize_price, 
                       var_CV = var_cv, 
-                      n= years) * maize_risks * farmers_risks  #yield (t/ha) profit
+                      n= years) * maize_risks  #yield (t/ha) profit
 
 
 maize_residue_2 <- vv (maize_residue_2 * residue_price,
@@ -298,7 +298,7 @@ maize_income_2 <- (maize_profit_2 + maize_residue_2) * market_risks
 
 soybean_profit_2 <- vv (soybean_yield_2 * soybean_price, 
                         var_CV = var_cv, 
-                        n= years) * soybean_risks * farmers_risks #yield in t/ha
+                        n= years) * soybean_risks  #yield in t/ha
 
 
 soybean_residue_2 <- vv (soybean_residue_2 * residue_price,
@@ -313,7 +313,7 @@ soybean_income_2 <- (soybean_profit_2 + soybean_residue_2)* market_risks
 
 maize_profit_3 <- vv (maize_yield_3 * maize_price, 
                       var_CV = var_cv, 
-                      n= years) * maize_risks * farmers_risks  #yield (t/ha) profit
+                      n= years) * maize_risks   #yield (t/ha) profit
 
 
 maize_residue_3 <- vv (maize_residue_3 * residue_price,
@@ -328,7 +328,7 @@ maize_income_3 <- (maize_profit_3 + maize_residue_3) * market_risks
 
 soybean_profit_3 <- vv (soybean_yield_3 * soybean_price, 
                         var_CV = var_cv, 
-                        n= years) * soybean_risks * farmers_risks #yield in t/ha
+                        n= years) * soybean_risks  #yield in t/ha
 
 
 soybean_residue_3 <- vv (soybean_residue_3 * residue_price,
@@ -344,7 +344,7 @@ soybean_income_3 <- (soybean_profit_3 + soybean_residue_3)* market_risks
 
 maize_profit_4 <- vv (maize_yield_4 * maize_price, 
                       var_CV = var_cv, 
-                      n= years) * maize_risks * farmers_risks  #yield (t/ha) profit
+                      n= years) * maize_risks  #yield (t/ha) profit
 
 
 maize_residue_4 <- vv (maize_residue_4 * residue_price,
@@ -359,7 +359,7 @@ maize_income_4 <- (maize_profit_4 + maize_residue_4) * market_risks
 
 soybean_profit_4 <- vv (soybean_yield_4 * soybean_price, 
                         var_CV = var_cv, 
-                        n= years) * soybean_risks * farmers_risks #yield in t/ha
+                        n= years) * soybean_risks #yield in t/ha
 
 
 soybean_residue_4 <- vv (soybean_residue_4 * residue_price,
@@ -375,7 +375,7 @@ soybean_income_4 <- (soybean_profit_4 + soybean_residue_4)* market_risks
 
 maize_profit_5 <- vv (maize_yield_5 * maize_price, 
                       var_CV = var_cv, 
-                      n= years) * maize_risks * farmers_risks  #yield (t/ha) profit
+                      n= years) * maize_risks  #yield (t/ha) profit
 
 
 maize_residue_5 <- vv (maize_residue_5 * residue_price,
@@ -390,7 +390,7 @@ maize_income_5 <- (maize_profit_5 + maize_residue_5) * market_risks
 
 soybean_profit_5 <- vv (soybean_yield_5 * soybean_price, 
                         var_CV = var_cv, 
-                        n= years) * soybean_risks * farmers_risks #yield in t/ha
+                        n= years) * soybean_risks  #yield in t/ha
 
 
 soybean_residue_5 <- vv (soybean_residue_5 * residue_price,
@@ -404,7 +404,7 @@ soybean_income_5 <- (soybean_profit_5 + soybean_residue_5)* market_risks
 
 ##Nutrients returned to soil (Nutrient partial balance in kg) ##
 #This will be affected by the availability and price of inorganic fertilizer in the market 
-#Also affected by farmers application method, right dose at right place and right time
+#Also affected by farmers application method, right dose at right place and right time 
 
 nutrient_replenished <- vv (nutrient * fertilizer_price, 
                                    var_CV = var_cv, 
@@ -437,15 +437,19 @@ fixed_Nitrogen <- vv (total_Nitrogen * Nitrogen_price,
 #Affected as well by farmers choice to use organic fertilizer
 saved_carbon <- vv (active_carbon* carbon_payment, 
                      var_CV = var_cv, 
-                     n= years) *farmers_risks * institutional_risks 
+                     n= years) * institutional_risks 
+
+SOC <- vv (SOC * carbon_payment, 
+           var_CV = var_cv, 
+           n= years) * institutional_risks
 
 
-##Species below and above ground estimated by the shannon diversity index##
-#Affected by land and farmer's choices
+##Microbes diversity which is estimated by a sac of inoculant used per ha
+#Affected by ownership of land
 
-biodiversity <- vv (var_mean = biodiversity_index * biodiversity_index_value,
+biodiversity <- vv (var_mean = inoculant,
                 var_CV = var_cv, 
-                n= years) * farmers_risks * institutional_risks 
+                n= years) * institutional_risks 
 
 
 ##If there is high infiltration rate the inputs will not be washed away. 
@@ -481,10 +485,11 @@ nutrition <- vv (HDD* calory_price,
 
 food_availability <- vv(food* meal_price,
                         var_CV = var_cv,
-                        n= years)* institutional_risks * farmers_risks * market_risks 
+                        n= years) * market_risks 
 
 
 ##Reduced expenditure on health matters because there is less contamination due to leaching ##
+
 contamination <- vv(percent_contamination_reduction * health_expenditure,
                     var_CV = var_cv,
                     n= years)* farmers_risks 
@@ -492,7 +497,7 @@ contamination <- vv(percent_contamination_reduction * health_expenditure,
 ##Stable mental health leads to happiness and healthy life
 mental_health <- vv(mental_health_incidence* health_expenditure,
                     var_CV = var_cv,
-                    n= years)* farmers_risks 
+                    n= years)
 
 ##Less mineral fertilizer will reduce GHG emission ##
 ##Reduced Greenhouse gases * Nitrous oxide emissions from N fertilizer
@@ -506,7 +511,7 @@ GHG <- (vv (nitrous_oxide,
               n= years) +
           vv(carbon_dioxide,
              var_CV = var_cv,
-             n= years)) * farmers_risks 
+             n= years))
 
 #Since farmers don't get paid for reduction of GHG, we consider them benefit to their health: less air pollution etc  
 
@@ -604,10 +609,7 @@ if_access <- chance_event(women_access,
 
 #Gender based violence (GBV) might occur as a result of land conflict, crop residue interest or access to information and opportunities
 
-GBV <- chance_event(GBV,
-                    value_if = 1,
-                    value_if_not = 0,
-                    n= years)
+GBV <- (land_conflict + crop_residue_conflict + if_access)
 
 #Provided access to information and resources  
 #More ISFM components come with increase labor for women as they still have to do household chores
@@ -620,7 +622,7 @@ additional_labor <- vv (var_mean = women_labor,
 #If provided access to the benefits, Women agency might lead to some income, here new women get to enroll to be part of a community where they will probably have information, access or support
 agency <- vv (var_mean = enrolment_cost,
               var_CV = var_cv,
-              n= years)* (1-if_access)
+              n= years)
 
 
 #Social network: If more farmers are included and do the same practice, they can create more activities together that will save them some money. 
@@ -628,14 +630,13 @@ agency <- vv (var_mean = enrolment_cost,
 #This can be linked to economic empowerment and perhaps some form of decision making power
 network <- vv (var_mean = saved_labor + off_farm_income,
                var_CV = var_cv,
-               n= years)* (1-if_access)
-
+               n= years)
 
 #Knowledge from new practices
 
 agric_knowledge <- vv(var_mean = training, 
                       var_CV = var_cv, 
-                      n= years) * (1- if_access)
+                      n= years) 
 
 
 
@@ -644,7 +645,7 @@ women_benefits <- (household_health + agency
               + network + agric_knowledge )
               
 women_benefits <- (women_benefits - additional_labor) * 
-                  (1-GBV + land_conflict +crop_residue_conflict)
+                  (1-GBV)
 
 
 #### TOTAL ECONOMIC BENEFITS of ISFM ####
@@ -672,16 +673,16 @@ component2_env <- (fixed_Nitrogen + nutrient_replenished)
 
 
 component3_env <- (fixed_Nitrogen
-                    + saved_carbon + saved_water + reduced_GHG + biodiversity
+                    + saved_carbon + saved_water + SOC + reduced_GHG + biodiversity
                     + contamination + erosion_control)
 
 
 component4_env<- (fixed_Nitrogen
-                  + saved_carbon + saved_water + reduced_GHG + biodiversity+ contamination
+                  + saved_carbon + saved_water + reduced_GHG + SOC + biodiversity+ contamination
                   + erosion_control + nutrient_replenished) 
 
 
-component5_env <- (fixed_Nitrogen + saved_carbon
+component5_env <- (fixed_Nitrogen + saved_carbon + SOC +
                     + saved_water + reduced_GHG + biodiversity+ contamination 
                     + erosion_control + nutrient_replenished
                     + infiltration + weed_suppression)
@@ -870,7 +871,7 @@ return(list(profit_statusquo = statusquo_profit,
 
 ISFM_mc_simulation <- mcSimulation(as.estimate(table), 
                               model_function = system_benefits,
-                              numberOfModelRuns = 1000,
+                              numberOfModelRuns = 10000,
                               functionSyntax = "plainNames")
 
 write.csv(ISFM_mc_simulation, "./ISFM_mc_simulation_results.csv")
