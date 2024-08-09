@@ -9,20 +9,11 @@ In this repository a holistic model will be developed, translating a conceptual 
 ** Conceptual model of cost-benefit analysis incorporating risk factors for ISFM in Northern Ghana. **
 
 ------------------------------------------------------------------------------------------------------------
-The conceptual model depicts the move from a few components toward complete ISFM as adapted by Vanlauwe et al. (2010). The model highlights the economic impact from the Decision analysis approach and its social implications which will be uncovered with the GenderUp approach. 
+The conceptual model depicts an impact pathway of 5 ISFM components (from a few components toward complete ISFM with 5 components as adapted by Vanlauwe et al. (2010)).
+The numbers define the components.
 
 
-NEW MODEL highlighting the economic (profit) and social (gender) outcomes
-
-<img width="752" alt="image" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/e60759df-dce4-47bf-9a3f-e9a9e169d43f">
-
-----------------------------------------------------------------------------------------------------------------------------
-
-
-OLD MODEL with the 5 indicators (productivity, economic, environmental, social and human domain)
-
-
-<img width="899" alt="image" src="https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/402039ea-beb5-42b6-af3e-f0b22094a818">
+![ISFM-components-impact-pathways-Current ISFM impact pathway drawio](https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/642db085-b300-44f7-8050-bd5d279ae493)
 
 
 ** REFERENCES **
