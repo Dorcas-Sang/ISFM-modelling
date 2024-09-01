@@ -2,7 +2,11 @@
 
 ####Farm Level Economic Benefit ####
 
-####Load packages####
+####Install and Load packages####
+install.packages("tidyverse")
+install.packages("decisionSupport")
+install.packages("dplyr")
+
 library(tidyverse)
 library(decisionSupport)
 library(dplyr)
@@ -43,13 +47,6 @@ system_benefits <- function(x, varnames){
 maize_risks <- chance_event(maize_risks, value_if = 1, 
                             value_if_not = 0,
                             n= years)
-                 
-
-##All the risks associated with soybean in every cropping season ##  
-
-soybean_risks <- chance_event(soybean_risks, value_if = 1, 
-                              value_if_not = 0,
-                              n= years)
                 
 
 ###price and market risks###
@@ -81,15 +78,14 @@ farmers_risks <- chance_event(farmers_risks, value_if = 1,
 ###Generic costs of ISFM###
 inputs_costs <- vv (var_mean = seed + pesticide, #Improved seed and pesticide
                     var_CV = var_cv,
-                    n= years, 
-                    relative_trend = inflation) #inflation: percentage of increase each year which is quite high in Ghana
+                    n= years) 
+                    
 
 
 labor <- vv(var_mean= hired_labor, #Hired labor for all field related activities other than household and neighbor force
           var_CV = var_cv,
-             n= years, 
-             relative_trend = inflation)
-
+             n= years) 
+            
 
 #farmers work a lot so they sometimes have pain and may need to buy painkiller
 #This cost applies to all component of ISFM but could increase as component number increase
@@ -97,8 +93,8 @@ labor <- vv(var_mean= hired_labor, #Hired labor for all field related activities
 
 medicine = vv(medicine_cost * pain_days,  #Number of days farmers might experience pain in a cropping season 
               var_CV = var_cv,
-              n= years,
-              relative_trend = inflation)
+              n= years)
+             
 
 no_medicine = vv(no_pain, 
               var_CV = var_cv,
@@ -119,18 +115,18 @@ other_costs <- (tools #equipment here are cutlass, hoe, wood and tiles for fenci
                  + soil_testing  # Not very common but sometimes farmers have to do it
                  + pain_yes #If buying medicine 
                 + land # Cost of land acquisition and registration
-                + tractor_services)
+                + tractor_services) 
 
 other_costs <- vv (var_mean = other_costs, 
                     var_CV = var_cv,
-                    n= years, 
-                    relative_trend = inflation)
+                    n= years)
+                 
 
 ##Here the above costs are generic in all ISFM components and status quo
 component_sq_inputs <-vv (var_mean = (trad_seed + pesticide), #traditional seed cost and pesticide
                    var_CV = var_cv,
-                   n= years, 
-                   relative_trend = inflation)
+                   n= years)
+                   
 
 total_cost_sq <- (component_sq_inputs 
                   + labor + other_costs)
@@ -147,8 +143,8 @@ total_cost_1 <- (component1_inputs + labor + other_costs)
 
 component2_inputs <- vv (var_mean = fertilizer_price + fertilizer_application, 
                     var_CV = var_cv,
-                    n= years, 
-                    relative_trend = inflation) 
+                    n= years)
+                   
 
 total_cost_2 <- (component2_inputs + labor + other_costs + inputs_costs)
 
@@ -231,6 +227,7 @@ total_cost_5 <- (component5_inputs + inputs_costs + labor+ manure + crop_residue
 ##Status Quo farm profit ##
 
 ##Maize monoculture and no soil amendment
+#Traditional maize varieties are used hence we assume they are susceptible to pest/disease and weather conditions
 
 maize_profit_sq <- vv (maize_yield_sq * maize_price, 
                     var_CV = var_cv, 
@@ -245,6 +242,7 @@ maize_residue_sq <- vv (maize_residue_sq * residue_price,
 maize_income_sq <- (maize_profit_sq + maize_residue_sq) * market_risks
 
 
+#From component 1 onwards improved resistance varieties are advised and they are not affected or severely affected by production risks
 
 #Component 1 farm profit #
 
@@ -252,7 +250,7 @@ maize_income_sq <- (maize_profit_sq + maize_residue_sq) * market_risks
 
 maize_profit_1 <- vv (maize_yield_1 * maize_price, 
                     var_CV = var_cv, 
-                    n= years) * maize_risks  #yield (t/ha) profit
+                    n= years)  #yield (t/ha) profit
 
 
 maize_residue_1 <- vv (maize_residue_1 * residue_price,
@@ -267,7 +265,7 @@ maize_income_1 <- (maize_profit_1 + maize_residue_1) * market_risks
 
 soybean_profit_1 <- vv (soybean_yield_1 * soybean_price, 
                       var_CV = var_cv, 
-                      n= years) * soybean_risks  #yield in t/ha
+                      n= years)  #yield in t/ha
 
 
 soybean_residue_1 <- vv (soybean_residue_1 * residue_price,
@@ -283,7 +281,7 @@ soybean_income_1 <- (soybean_profit_1 + soybean_residue_1)* market_risks
 
 maize_profit_2 <- vv (maize_yield_2 * maize_price, 
                       var_CV = var_cv, 
-                      n= years) * maize_risks  #yield (t/ha) profit
+                      n= years)  #yield (t/ha) profit
 
 
 maize_residue_2 <- vv (maize_residue_2 * residue_price,
@@ -298,7 +296,7 @@ maize_income_2 <- (maize_profit_2 + maize_residue_2) * market_risks
 
 soybean_profit_2 <- vv (soybean_yield_2 * soybean_price, 
                         var_CV = var_cv, 
-                        n= years) * soybean_risks  #yield in t/ha
+                        n= years)  #yield in t/ha
 
 
 soybean_residue_2 <- vv (soybean_residue_2 * residue_price,
@@ -313,7 +311,7 @@ soybean_income_2 <- (soybean_profit_2 + soybean_residue_2)* market_risks
 
 maize_profit_3 <- vv (maize_yield_3 * maize_price, 
                       var_CV = var_cv, 
-                      n= years) * maize_risks   #yield (t/ha) profit
+                      n= years)  #yield (t/ha) profit
 
 
 maize_residue_3 <- vv (maize_residue_3 * residue_price,
@@ -328,7 +326,7 @@ maize_income_3 <- (maize_profit_3 + maize_residue_3) * market_risks
 
 soybean_profit_3 <- vv (soybean_yield_3 * soybean_price, 
                         var_CV = var_cv, 
-                        n= years) * soybean_risks  #yield in t/ha
+                        n= years)  #yield in t/ha
 
 
 soybean_residue_3 <- vv (soybean_residue_3 * residue_price,
@@ -344,7 +342,7 @@ soybean_income_3 <- (soybean_profit_3 + soybean_residue_3)* market_risks
 
 maize_profit_4 <- vv (maize_yield_4 * maize_price, 
                       var_CV = var_cv, 
-                      n= years) * maize_risks  #yield (t/ha) profit
+                      n= years)  #yield (t/ha) profit
 
 
 maize_residue_4 <- vv (maize_residue_4 * residue_price,
@@ -359,7 +357,7 @@ maize_income_4 <- (maize_profit_4 + maize_residue_4) * market_risks
 
 soybean_profit_4 <- vv (soybean_yield_4 * soybean_price, 
                         var_CV = var_cv, 
-                        n= years) * soybean_risks #yield in t/ha
+                        n= years)  #yield in t/ha
 
 
 soybean_residue_4 <- vv (soybean_residue_4 * residue_price,
@@ -375,7 +373,7 @@ soybean_income_4 <- (soybean_profit_4 + soybean_residue_4)* market_risks
 
 maize_profit_5 <- vv (maize_yield_5 * maize_price, 
                       var_CV = var_cv, 
-                      n= years) * maize_risks  #yield (t/ha) profit
+                      n= years)  #yield (t/ha) profit
 
 
 maize_residue_5 <- vv (maize_residue_5 * residue_price,
@@ -390,7 +388,7 @@ maize_income_5 <- (maize_profit_5 + maize_residue_5) * market_risks
 
 soybean_profit_5 <- vv (soybean_yield_5 * soybean_price, 
                         var_CV = var_cv, 
-                        n= years) * soybean_risks  #yield in t/ha
+                        n= years)  #yield in t/ha
 
 
 soybean_residue_5 <- vv (soybean_residue_5 * residue_price,
@@ -412,37 +410,41 @@ nutrient_replenished <- vv (nutrient * fertilizer_price,
 
 ## Soil loss prevention as Organic fertilization improves soil structure ##
 #This will be affected by land rights because it takes some time for his benefit to be visible 
-#It will also be affected by farmers choice of applying organic fertilizer
 
 erosion_control <- vv (reduced_soil_loss * price_saved_soil,
                        var_CV = var_cv,
-                       n= years)* institutional_risks * farmers_risks
+                       n= years)* institutional_risks 
 
 
 ## Due to organic fertilizer application there will be high moisture and less need for irrigation ##
-#This will also be affected by farmers choice of applying organic fertilizer
 saved_water <- vv (percent_moisture * water_price,
                 var_CV = var_cv, 
-                n= years)* farmers_risks 
+                n= years)
 
 
 ##Biological Nitrogen fixation (BNF) N/ha from the soybean##
 #This will be affected by soybean variety linked to its BNF potential as well as it's growth rate
+#Soybean risks which will affect the Nitrogen fixation potential 
+
+soybean_risks <- chance_event(soybean_risks, value_if = 1, 
+                              value_if_not = 0,
+                              n= years)  
+
+
 fixed_Nitrogen <- vv (total_Nitrogen * Nitrogen_price, 
            var_CV = var_cv, 
            n= years) * soybean_risks 
 
 
 ##Active Carbon (mg/kg of soil) which takes long time to accumulate in the soil and might be affected by land tenure problems ##
-#Affected as well by farmers choice to use organic fertilizer
-saved_carbon <- vv (active_carbon* carbon_payment, 
-                     var_CV = var_cv, 
-                     n= years) * institutional_risks 
 
 SOC <- vv (SOC * carbon_payment, 
            var_CV = var_cv, 
            n= years) * institutional_risks
 
+saved_carbon <- vv (active_carbon* carbon_payment, 
+                    var_CV = var_cv, 
+                    n= years) * institutional_risks 
 
 ##Microbes diversity which is estimated by a sac of inoculant used per ha
 #Affected by ownership of land
@@ -457,14 +459,14 @@ biodiversity <- vv (var_mean = inoculant,
 
 infiltration <- vv (infiltration_rate * tractor_services,
                     var_CV = var_cv,
-                    n= years)* institutional_risks
+                    n= years)
 
 
 ## Minimum tillage will reduce incidence of weed hence the need for pesticide##
 
 weed_suppression <-vv (percent_weed * weed_management_price,
                        var_CV = var_cv,
-                       n= years) * farmers_risks
+                       n= years) 
 
 
 ####Household benefits ####
@@ -539,7 +541,7 @@ children_education <- chance_event(if_profit,
 
 agric_knowledge <- vv(var_mean = training, 
                 var_CV = var_cv, 
-                n= years) * farmers_risks
+                n= years) 
 
 
 
@@ -568,7 +570,7 @@ social_status <- chance_event(if_profit,
 
 agric_knowledge <- vv(var_mean = training, 
                 var_CV = var_cv, 
-                n= years) * farmers_risks
+                n= years)
 
 
 #less need for insurance
@@ -609,7 +611,7 @@ if_access <- chance_event(women_access,
 
 #Gender based violence (GBV) might occur as a result of land conflict, crop residue interest or access to information and opportunities
 
-GBV <- (land_conflict + crop_residue_conflict + if_access)
+GBV <- (land_conflict * crop_residue_conflict * if_access)
 
 #Provided access to information and resources  
 #More ISFM components come with increase labor for women as they still have to do household chores
@@ -657,7 +659,7 @@ women_benefits <- (women_benefits - additional_labor) *
 #Profit is farm revenue minus total costs, where farm revenue is only from the harvested crops and the residue
 
 statusquo_profit <- (maize_income_sq)- total_cost_sq
-component1_profit <- (maize_income_1+ soybean_income_1)- total_cost_1
+component1_profit <- (maize_income_1 + soybean_income_1)- total_cost_1
 component2_profit <- (maize_income_2 + soybean_income_2)- total_cost_2
 component3_profit <- (maize_income_3 + soybean_income_3)- total_cost_3
 component4_profit <- (maize_income_4 + soybean_income_4)- total_cost_4
@@ -694,18 +696,18 @@ household_benefits <- children_benefits + women_benefits + men_benefits
 
 
 ####Total benefits####
-total_benefit_sq <- (statusquo_profit)* exchange_rate
-total_benefit_1 <- (component1_profit + component1_env + household_benefits)*exchange_rate
-total_benefit_2 <- (component2_profit + component2_env + household_benefits)*exchange_rate
-total_benefit_3 <- (component3_profit + component3_env + household_benefits)*exchange_rate
-total_benefit_4 <- (component4_profit + component4_env + household_benefits)*exchange_rate
-total_benefit_5 <- (component5_profit + component5_env + household_benefits)*exchange_rate
+total_benefit_sq <- (statusquo_profit)/ exchange_rate
+total_benefit_1 <- (component1_profit + component1_env + household_benefits)/exchange_rate
+total_benefit_2 <- (component2_profit + component2_env + household_benefits)/exchange_rate
+total_benefit_3 <- (component3_profit + component3_env + household_benefits)/exchange_rate
+total_benefit_4 <- (component4_profit + component4_env + household_benefits)/exchange_rate
+total_benefit_5 <- (component5_profit + component5_env + household_benefits)/exchange_rate
 
 
 ####ANALYSIS####
 
 #Net Present Value (NPV)
-#Cashflow analysis: projected trend of monetary return
+#Cashflow analysis: projected trend of monetary return based on the profit
 #Discount rate is time value for money
 
 
@@ -871,15 +873,14 @@ return(list(profit_statusquo = statusquo_profit,
 
 ISFM_mc_simulation <- mcSimulation(as.estimate(table), 
                               model_function = system_benefits,
-                              numberOfModelRuns = 10000,
+                              numberOfModelRuns = 1000,
                               functionSyntax = "plainNames")
 
 write.csv(ISFM_mc_simulation, "./ISFM_mc_simulation_results.csv")
 
 ####subsetting data ####
 
-mc_result_ISFM<-read.csv("ISFM_mc_simulation_results.csv",header= TRUE, sep=",")
-
+mc_result_ISFM <-read.csv("ISFM_mc_simulation_results.csv",header= TRUE, sep=",")
 
 
 ####PLOTTING####
@@ -905,8 +906,7 @@ library(patchwork) #to build plots together
 
 ##Profit visualization#### 
 
-
-profit_table<-mc_result_ISFM [,c(1:7)] 
+profit_table<-mc_result_ISFM [,c(2:7)] 
 
 profit_data_frame <- data.frame(profit_table)
 
@@ -928,6 +928,9 @@ profit_plot_box= ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, col
 
 profit_plot_box
 
+#Save profit boxplot
+
+ggsave("profit_boxplot.png", plot = profit_plot_box, width = 10, height = 8, dpi = 300)
 
 ### Smooth Plot ###
 
@@ -937,13 +940,16 @@ profit_plot_smooth= ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, 
   ylab("Probability density")+
   xlab(" Farm Profit (in USD)")
 
-profit_plot_smooth <-profit_plot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
+profit_plot_smooth <- profit_plot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
   theme(legend.title = element_blank())+
   ggtitle("Farm- level profit of Integrated Soil Fertility Management")+
   theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
 
 
 profit_plot_smooth
+
+#Save profit smooth plot 
+ggsave("profit_smoothplot.png", plot = profit_plot_smooth, width = 10, height = 8, dpi = 300)
 
 
 #### Environmental benefits visualization#### 
@@ -958,21 +964,18 @@ ISFM_env <- env_data_frame %>%
 
 #### Plotting  environmental benefits ####
 
-## Smooth density 
-
-env_plot_smooth= ggplot(ISFM_env, aes(x = Environmental_benefits, fill = ISFM_Components, color= ISFM_Components)) +                       
-  geom_density(alpha = 0.05)+  
+#Box plot environmental benefits
+env_plot_box= ggplot(ISFM_env, aes(x = Environmental_benefits, fill = ISFM_Components, color= ISFM_Components)) +                       
+  geom_boxplot()+
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Benefits (in USD)")
+  xlab("Environmental benefits (in USD)")
 
+env_plot_box
 
-env_plot_smooth <-env_plot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
-  theme(legend.title = element_blank())+
-  ggtitle("Environmental benefits of Integrated Soil Fertility Management")+
-  theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
+#save environmental plot benefits
+ggsave("environmental_boxplot.png", plot = env_plot_box, width = 10, height = 8, dpi = 300)
 
-env_plot_smooth
 
 
 ##Household benefits visualization
@@ -1006,6 +1009,11 @@ household_box<-household_plot_box+ theme_bw() +theme(legend.position = c(.7, .8)
 
 household_box
 
+#save household benefits boxplot 
+ggsave("household_boxplot.png", plot = household_box, width = 10, height = 8, dpi = 300)
+
+
+
 ## Smooth density 
 
 household_smooth= ggplot(household_ISFM, aes(x = household_benefits, fill = ISFM_Components, color= ISFM_Components)) +                       
@@ -1022,6 +1030,10 @@ household_smooth <- household_smooth + theme_bw() +theme(legend.position = c(.7,
   theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
 
 household_smooth
+
+#saving household benefits smooth plot
+ggsave("household_smooth.png", plot = household_smooth, width = 10, height = 8, dpi = 300)
+
 
 
 ## Economic Net Present Value with all the benefits put together##
@@ -1049,10 +1061,8 @@ npvplot_box= ggplot(ISFM_npv, aes(x = NPV, fill = ISFM_Components, color= ISFM_C
   ylab("Probability density")+
   xlab("Net Present Value (in USD)")
 
-npvplot_box
 
-
-#### Visualization of Boxplot #### 
+#### Visualization of Box plot #### 
 
 npv_box<-npvplot_box+ theme_bw() +theme(legend.position = c(.7, .8))+
   theme(legend.title = element_blank())+
@@ -1061,6 +1071,9 @@ npv_box<-npvplot_box+ theme_bw() +theme(legend.position = c(.7, .8))+
 
 
 npv_box
+
+#save NPV boxplot 
+ggsave("NPV_boxplot.png", plot = npv_box, width = 10, height = 8, dpi = 300)
 
 ## Smooth density 
 
@@ -1079,6 +1092,8 @@ npv_smooth <-npvplot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
 npv_smooth
 
 
+#save NPV smooth 
+ggsave("NPV_smooth.png", plot = npv_smooth, width = 10, height = 8, dpi = 300)
 
 #### SENSITIVITY ANALYSIS #### 
 
@@ -1221,6 +1236,10 @@ cashflow_all <- (cashflowsq + cashflow1 + cashflow2 + cashflow3
 plot_annotation(title = "Cashflow of the status quo and 5 components of ISFM")
 
 cashflow_all
+
+
+#save cashflow plot 
+ggsave("cashflow.png", plot = cashflow_all, width = 10, height = 8, dpi = 300)
 
 
 
