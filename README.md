@@ -13,7 +13,7 @@ The conceptual model depicts an impact pathway of 5 ISFM components (from a few 
 The numbers define the components.
 
 
-![ISFM-components-impact-pathways-Current ISFM impact pathway drawio](https://github.com/Dorcas-Sang/ISFM-INTERFACES/assets/129223674/642db085-b300-44f7-8050-bd5d279ae493)
+![current_ISFM-components-impact-pathways](https://github.com/user-attachments/assets/a625f2b0-f0a0-4765-88d1-199931957768)
 
 
 ** REFERENCES **
