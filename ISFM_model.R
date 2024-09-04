@@ -709,7 +709,7 @@ component3_profit <- component3_profit_raw - statusquo_profit
 component4_profit_raw <- ((maize_income_4 + soybean_income_4)- total_cost_4)/exchange_rate
 component4_profit <- component4_profit_raw - statusquo_profit
 
-component5_profit_raw <- ((maize_income_5 + soybean_income_5)- total_cost_5)_/exchange_rate
+component5_profit_raw <- ((maize_income_5 + soybean_income_5)- total_cost_5)/exchange_rate
 component5_profit <- component5_profit_raw - statusquo_profit
 
 #### Environmental benefits####
@@ -993,7 +993,7 @@ profit_plot_box= ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, col
   geom_boxplot()+
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Farm Profit ($) compared to -373 to 1209 $ statusquo") ###change this to actual statusquo value
+  xlab("Farm Profit ($) compared to -452 to -474 $ statusquo") ###change this to actual statusquo value
 
 profit_plot_box
 
@@ -1007,7 +1007,7 @@ profit_plot_smooth= ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, 
   geom_density(alpha = 0.05)+  
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Farm Profit ($) compared to  $ statusquo") ###change this to actual statusquo value
+  xlab("Farm Profit ($) compared to -452 to -474 $ statusquo") ###change this to actual statusquo value
 
 profit_plot_smooth <- profit_plot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
   theme(legend.title = element_blank())+
