@@ -80,7 +80,6 @@ inputs_costs <- vv (var_mean = improved_maize_seed + improved_soybean_seed #Impr
                     + pesticide, 
                     var_CV = var_cv,
                     n= years) 
-                    
 
 
 labor <- vv(var_mean= hired_labor, #Hired labor for all field related activities other than household and neighbor force
@@ -114,14 +113,16 @@ other_costs_raw <- (tools #equipment here are cutlass, hoe, wood and tiles for f
                  + fuel  # small token paid to extension officers when they visit
                  + training # Farmers need to make time for training but sometimes also pay for it in terms of transport 
                  + soil_testing  # Not very common but sometimes farmers have to do it
-                 + sickness #If buying medicine 
                 + land # Cost of land acquisition and registration
                 + tractor_services) 
 
-other_costs <- vv (var_mean = other_costs_raw, 
+other_costs1 <- vv (var_mean = other_costs_raw, 
                     var_CV = var_cv,
                     n= years)
-                 
+
+#Adding the cost of medicine if farmers get sick 
+
+other_costs <- other_costs1 + sickness #If buying medicine           
 
 ##Here the above costs are generic in all ISFM components and status quo
 component_sq_inputs <-vv (var_mean = (trad_seed + pesticide), #traditional seed cost and pesticide
@@ -156,16 +157,16 @@ total_cost_2 <- (component2_inputs + labor + other_costs + inputs_costs)
 #Some/most farmers do not incorporate their crop residues in the field and some others do not own livestock to have manure 
 #In such cases when using organic amendment they have to buy in the market or outsource from neighbors at a small fee
 
-own_residue= vv(farmer_residue, #Zero cost to buy residue in this case 
+own_residue= vv(farmer_residue, #Zero cost to buy residue in this case because farmers left some for farming
               var_CV = var_cv,
               n= years)
               
                      
-no_residue = vv(residue_price,
+no_residue = vv(residue_price, #When farmers have to outsource so they could make organic fertilizer
                     var_CV = var_cv,
                     n= years)
                     
-
+# Need for residue for farming and how much
 crop_residue <- chance_event(if_crop_residue,
                                 value_if = own_residue,
                                 value_if_not = no_residue,
@@ -179,11 +180,11 @@ livestock= vv(farmer_manure, #Zero cost to buy manure in this case
       n=years)
       
 
-no_livestock <- vv(manure_price,
+no_livestock <- vv(manure_price, #When farmers have to outsource manure because they don't own livestock
                var_CV = var_cv,
                n= years)
                
-
+#Probability of paying for manure and how much
 manure <- chance_event(if_livestock,
                               value_if = livestock,
                               value_if_not = no_livestock,
@@ -210,8 +211,22 @@ total_cost_4 <- (component4_inputs+ inputs_costs + manure+
 
 ##component 5 (IG + OF+ IF + M/ZT)
 #Less need to till land hence no need for tractor services 
+#discounting the other cost by removing the tractor services cost 
 
-component5_inputs <- (component4_inputs + (other_costs- tractor_services))
+other_costs_raw5 <- (tools #equipment here are cutlass, hoe, wood and tiles for fencing etc 
+                    + transport # transport of inputs and harvest produce to and from market
+                    + fuel  # small token paid to extension officers when they visit
+                    + training # Farmers need to make time for training but sometimes also pay for it in terms of transport 
+                    + soil_testing  # Not very common but sometimes farmers have to do it
+                    + land) # Cost of land acquisition and registration
+                    
+
+other_costs5 <- vv (var_mean = other_costs_raw5, 
+                    var_CV = var_cv,
+                    n= years)
+
+
+component5_inputs <- (component4_inputs + other_costs5)
 
 total_cost_5 <- (component5_inputs + inputs_costs + labor+ manure + crop_residue) 
 
@@ -232,12 +247,12 @@ total_cost_5 <- (component5_inputs + inputs_costs + labor+ manure + crop_residue
 
 maize_profit_sq <- vv (maize_yield_sq * maize_price, 
                     var_CV = var_cv, 
-                    n= years) * maize_risks   #yield (t/ha) profit
+                    n= years) * maize_risks   #yield (kg/ha) profit
 
 
 maize_residue_profit_sq <- vv (maize_residue_sq * residue_price,
                      var_CV = var_cv, 
-                     n= years)  #profit on biomass (t/ha)
+                     n= years)  #profit on biomass (kg/ha)
 
 
 maize_income_sq <- (maize_profit_sq + maize_residue_profit_sq) * market_risks
@@ -251,12 +266,12 @@ maize_income_sq <- (maize_profit_sq + maize_residue_profit_sq) * market_risks
 
 maize_profit_1 <- vv (maize_yield_1 * maize_price, 
                     var_CV = var_cv, 
-                    n= years)  #yield (t/ha) profit
+                    n= years)  #yield (kg/ha) profit
 
 
 maize_residue_profit1 <- vv (maize_residue_1 * residue_price,
                      var_CV = var_cv, 
-                     n= years)  #profit on biomass (t/ha)
+                     n= years)  #profit on biomass (kg/ha)
 
 
 maize_income_1 <- (maize_profit_1 + maize_residue_profit1) * market_risks
@@ -401,11 +416,11 @@ soybean_income_5 <- (soybean_profit_5 + soybean_residue_profit5)* market_risks
   
 #### Environmental benefits of ISFM components linked to soil health ####
 
-##Nutrients returned to soil (Nutrient partial balance in kg) ##
+##Nutrients returned to soil (Nutrient partial balance in kg) counted by the value of NPK fertilizer ##
 #This will be affected by the availability and price of inorganic fertilizer in the market 
 #Also affected by farmers application method, right dose at right place and right time 
 
-nutrient_replenished <- vv (nutrient_partial_balance * fertilizer_price, 
+nutrient_replenished <- vv (nutrient_partial_balance, 
                                    var_CV = var_cv, 
                                    n= years)* market_risks* farmers_risks 
 
@@ -443,7 +458,7 @@ SOC <- vv (soil_organic_carbon * carbon_payment,
            var_CV = var_cv, 
            n= years) * institutional_risks
 
-saved_carbon <- vv (active_carbon* carbon_payment, 
+saved_carbon <- vv (active_carbon * carbon_payment, 
                     var_CV = var_cv, 
                     n= years) * institutional_risks 
 
@@ -492,6 +507,7 @@ food_availability <- vv(food_availability_index * meal_price,
 
 
 ##Reduced expenditure on health matters because there is less contamination due to leaching ##
+#clean drinking water and no respiratory diseases or hand burners from touching chemicals 
 
 contamination <- vv(percent_contamination_reduction * health_expenditure,
                     var_CV = var_cv,
@@ -521,12 +537,16 @@ GHG <- (vv (nitrous_oxide,
 reduced_GHG <- (GHG * health_expenditure)
 
 
-##All the above put together to get the generic household health benefit for all members##
-
-household_health <- (nutrition + food_availability +contamination
-                    + mental_health + reduced_GHG)
-
 ####Benefits per member of the household####
+#members of the household will not benefit equally from household health especially women who take care of their families wellbeing
+
+children_health <- (nutrition + food_availability + reduced_GHG
+                    + contamination)
+
+women_health <- (reduced_GHG + contamination)
+
+men_health <- (nutrition + food_availability + reduced_GHG
+               + contamination + mental_health)
 
 ##Children##
 #Children only get nutrition, education and inherit fertile land, they don't get the profit 
@@ -555,8 +575,10 @@ land_inheritance <- vv(land,
                           relative_trend = inflation)
 
 
-children_benefits <-(household_health + agric_knowledge
+children_benefits_raw <-(children_health + agric_knowledge
                     + children_education + land_inheritance)
+
+children_benefits <- children_benefits_raw/exchange_rate
   
 
 ##Men ##
@@ -586,8 +608,10 @@ schock_resilience <- vv(insurance_price,
                         n= years,
                         relative_trend = inflation)* (1-maize_risks) * (1-soybean_risks)
   
-men_benefits <- (household_health + social_status 
+men_benefits_raw <- (men_health + social_status 
                 + agric_knowledge + schock_resilience)   
+
+men_benefits <- men_benefits_raw/exchange_rate
   
 ##Women
 
@@ -649,11 +673,13 @@ agric_knowledge <- vv(var_mean = training,
 
 
 ###All women benefits put together and discounted in case of Gender Based Violeonce 
-women_benefits <- (household_health + agency 
+women_benefits_1 <- (women_health + agency 
               + network + agric_knowledge )
               
-women_benefits <- (women_benefits - additional_labor) * 
+women_benefits_raw <- (women_benefits_1 - additional_labor) * 
                   (1-GBV)
+
+women_benefits <- (women_benefits_raw)/exchange_rate
 
 
 #### TOTAL ECONOMIC BENEFITS of ISFM ####
@@ -665,44 +691,47 @@ women_benefits <- (women_benefits - additional_labor) *
 #Profit is farm revenue minus total costs, where farm revenue is only from the harvested crops and the residue
 #These benefits are compared to the status quo
 #Assuming the area ratio of maize and soybean are equally distributed
+#All raw values are in Ghana cedis before conversion to US Dollars
 
-statusquo_profit <- (maize_income_sq)- total_cost_sq #maize is on all 100 % of farmer area
+statusquo_profit_raw <- (maize_income_sq- total_cost_sq)
+statusquo_profit <- (maize_income_sq- total_cost_sq)/exchange_rate #maize is on all 100 % of farmer area
+mean_status <- range(statusquo_profit)  #to know the range profit of the statusquo 
 
-component1_profit_raw <- (maize_income_1 + soybean_income_1)- total_cost_1
+component1_profit_raw <- ((maize_income_1 + soybean_income_1)- total_cost_1)/exchange_rate
 component1_profit <- component1_profit_raw - statusquo_profit
 
-component2_profit_raw <- (maize_income_2 + soybean_income_2)- total_cost_2
+component2_profit_raw <- ((maize_income_2 + soybean_income_2)- total_cost_2)/exchange_rate
 component2_profit <- component2_profit_raw - statusquo_profit
 
-component3_profit_raw <- (maize_income_3 + soybean_income_3)- total_cost_3
+component3_profit_raw <- ((maize_income_3 + soybean_income_3)- total_cost_3)/exchange_rate
 component3_profit <- component3_profit_raw - statusquo_profit
 
-component4_profit_raw <- (maize_income_4 + soybean_income_4)- total_cost_4
+component4_profit_raw <- ((maize_income_4 + soybean_income_4)- total_cost_4)/exchange_rate
 component4_profit <- component4_profit_raw - statusquo_profit
 
-component5_profit_raw <- (maize_income_5 + soybean_income_5)- total_cost_5
+component5_profit_raw <- ((maize_income_5 + soybean_income_5)- total_cost_5)_/exchange_rate
 component5_profit <- component5_profit_raw - statusquo_profit
 
 #### Environmental benefits####
-statusquo_env <- fixed_Nitrogen
+statusquo_env <- (fixed_Nitrogen)/exchange_rate
 
-component1_env_raw <- fixed_Nitrogen
+component1_env_raw <- (fixed_Nitrogen)/exchange_rate
 component1_env <- component1_env_raw - statusquo_env
                   
-component2_env_raw <- (fixed_Nitrogen + nutrient_replenished)
+component2_env_raw <- (fixed_Nitrogen + nutrient_replenished)/exchange_rate
 component2_env <- component2_env_raw - statusquo_env
 
 
 component3_env_raw <- (fixed_Nitrogen
                     + saved_carbon + saved_water + SOC + reduced_GHG + biodiversity
-                    + contamination + erosion_control)
+                    + contamination + erosion_control)/exchange_rate
 
 component3_env <- component3_env_raw - statusquo_env
 
 
 component4_env_raw <- (fixed_Nitrogen
                   + saved_carbon + saved_water + reduced_GHG + SOC + biodiversity+ contamination
-                  + erosion_control + nutrient_replenished) 
+                  + erosion_control + nutrient_replenished)/exchange_rate
 
 component4_env <- component4_env_raw - statusquo_env
 
@@ -710,35 +739,37 @@ component4_env <- component4_env_raw - statusquo_env
 component5_env_raw <- (fixed_Nitrogen + saved_carbon + SOC +
                     + saved_water + reduced_GHG + biodiversity+ contamination 
                     + erosion_control + nutrient_replenished
-                    + infiltration + weed_suppression)
+                    + infiltration + weed_suppression)/exchange_rate
 
 component5_env <- component5_env_raw - statusquo_env
 
 
 
 #####Farm level Household benefits ####
-household_benefits <- children_benefits + women_benefits + men_benefits
+household_benefits_raw <- children_benefits_raw + women_benefits_raw + men_benefits_raw
 
+#####Farm level Household benefits after exchange rate ####
+household_benefits <- household_benefits_raw/exchange_rate
 
 ####Total benefits####
 #ISFM components benefits discounted by the status quo
 
-total_benefit_sq <- (statusquo_profit)/ exchange_rate
+total_benefit_sq <- (statusquo_profit_raw)/ exchange_rate
 
-total_benefit_1_raw <- (component1_profit + component1_env + household_benefits)/exchange_rate
+total_benefit_1_raw <- (component1_profit_raw + component1_env_raw + household_benefits_raw)/exchange_rate
 total_benefit_1 <- total_benefit_1_raw - total_benefit_sq
 
-total_benefit_2_raw <- (component2_profit + component2_env + household_benefits)/exchange_rate
+total_benefit_2_raw <- (component2_profit_raw + component2_env_raw + household_benefits_raw)/exchange_rate
 total_benefit_2 <- total_benefit_2_raw - total_benefit_sq
 
-total_benefit_3_raw <- (component3_profit + component3_env + household_benefits)/exchange_rate
+total_benefit_3_raw <- (component3_profit_raw + component3_env_raw + household_benefits_raw)/exchange_rate
 total_benefit_3 <- total_benefit_3_raw - total_benefit_sq
 
-total_benefit_4_raw <- (component4_profit + component4_env + household_benefits)/exchange_rate
+total_benefit_4_raw <- (component4_profit_raw + component4_env_raw + household_benefits_raw)/exchange_rate
 total_benefit_4 <- total_benefit_4_raw - total_benefit_sq
 
 
-total_benefit_5_raw <- (component5_profit + component5_env + household_benefits)/exchange_rate
+total_benefit_5_raw <- (component5_profit_raw + component5_env_raw + household_benefits_raw)/exchange_rate
 total_benefit_5 <- total_benefit_5_raw - total_benefit_sq
 
 
@@ -962,7 +993,7 @@ profit_plot_box= ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, col
   geom_boxplot()+
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Farm Profit ($) compared to 5000 $ statusquo") ###change this to actual statusquo value
+  xlab("Farm Profit ($) compared to -373 to 1209 $ statusquo") ###change this to actual statusquo value
 
 profit_plot_box
 
@@ -976,7 +1007,7 @@ profit_plot_smooth= ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, 
   geom_density(alpha = 0.05)+  
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Farm Profit ($) compared to 5000 $ statusquo") ###change this to actual statusquo value
+  xlab("Farm Profit ($) compared to  $ statusquo") ###change this to actual statusquo value
 
 profit_plot_smooth <- profit_plot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
   theme(legend.title = element_blank())+
