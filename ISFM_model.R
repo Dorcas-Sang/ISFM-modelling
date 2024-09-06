@@ -543,7 +543,7 @@ reduced_GHG <- (GHG * health_expenditure)
 children_health <- (nutrition + food_availability + reduced_GHG
                     + contamination)
 
-women_health <- (reduced_GHG + contamination)
+women_health <- (nutrition + food_availability + reduced_GHG + contamination)
 
 men_health <- (nutrition + food_availability + reduced_GHG
                + contamination + mental_health)
@@ -578,8 +578,6 @@ land_inheritance <- vv(land,
 children_benefits_raw <-(children_health + agric_knowledge
                     + children_education + land_inheritance)
 
-children_benefits <- children_benefits_raw/exchange_rate
-  
 
 ##Men ##
 
@@ -611,7 +609,6 @@ schock_resilience <- vv(insurance_price,
 men_benefits_raw <- (men_health + social_status 
                 + agric_knowledge + schock_resilience)   
 
-men_benefits <- men_benefits_raw/exchange_rate
   
 ##Women
 
@@ -679,8 +676,6 @@ women_benefits_1 <- (women_health + agency
 women_benefits_raw <- (women_benefits_1 - additional_labor) * 
                   (1-GBV)
 
-women_benefits <- (women_benefits_raw)/exchange_rate
-
 
 #### TOTAL ECONOMIC BENEFITS of ISFM ####
 #### 4 layers of benefits  ####
@@ -693,7 +688,6 @@ women_benefits <- (women_benefits_raw)/exchange_rate
 #Assuming the area ratio of maize and soybean are equally distributed
 #All raw values are in Ghana cedis before conversion to US Dollars
 
-statusquo_profit_raw <- (maize_income_sq- total_cost_sq)
 statusquo_profit <- (maize_income_sq- total_cost_sq)/exchange_rate #maize is on all 100 % of farmer area
 mean_status <- range(statusquo_profit)  #to know the range profit of the statusquo 
 
@@ -745,32 +739,41 @@ component5_env <- component5_env_raw - statusquo_env
 
 
 
-#####Farm level Household benefits ####
-household_benefits_raw <- children_benefits_raw + women_benefits_raw + men_benefits_raw
+#####Farm level all household benefits ####
+household_benefits <- children_benefits_raw + women_benefits_raw + men_benefits_raw
 
 #####Farm level Household benefits after exchange rate ####
-household_benefits <- household_benefits_raw/exchange_rate
+household_benefits_raw <- household_benefits/exchange_rate
 
 ####Total benefits####
-#ISFM components benefits discounted by the status quo
+#ISFM components benefits
 
-total_benefit_sq <- (statusquo_profit_raw)/ exchange_rate
+total_benefit_sq <- (statusquo_profit)
+statusquo_range <- range(total_benefit_sq)
 
-total_benefit_1_raw <- (component1_profit_raw + component1_env_raw + household_benefits_raw)/exchange_rate
-total_benefit_1 <- total_benefit_1_raw - total_benefit_sq
+total_benefit_1 <- (component1_profit + component1_env + household_benefits_raw)
 
-total_benefit_2_raw <- (component2_profit_raw + component2_env_raw + household_benefits_raw)/exchange_rate
-total_benefit_2 <- total_benefit_2_raw - total_benefit_sq
+total_benefit_2 <- (component2_profit + component2_env + household_benefits_raw)
 
-total_benefit_3_raw <- (component3_profit_raw + component3_env_raw + household_benefits_raw)/exchange_rate
-total_benefit_3 <- total_benefit_3_raw - total_benefit_sq
+total_benefit_3 <- (component3_profit + component3_env + household_benefits_raw)
 
-total_benefit_4_raw <- (component4_profit_raw + component4_env_raw + household_benefits_raw)/exchange_rate
-total_benefit_4 <- total_benefit_4_raw - total_benefit_sq
+total_benefit_4 <- (component4_profit + component4_env + household_benefits_raw)
+
+total_benefit_5 <- (component5_profit + component5_env + household_benefits_raw)
 
 
-total_benefit_5_raw <- (component5_profit_raw + component5_env_raw + household_benefits_raw)/exchange_rate
-total_benefit_5 <- total_benefit_5_raw - total_benefit_sq
+##### Farm level Household benefits per household member ####
+
+children_benefits_total <- (children_benefits)
+
+
+women_benefits_profit <- chance_event(if_access, 
+                                 value_if = component5_profit,
+                                 value_if_not = women_benefits)
+  
+women_benefits_total <- (women_benefits_profit)
+
+men_benefits_total <- (men_benefits + component5_profit + component5_env)
 
 
 ####ANALYSIS####
@@ -889,19 +892,16 @@ cashflow_5 <- discount (total_benefit_5, discount_rate = discount_rate,
 cumulative_cashflow_5 <- cumsum(cashflow_5)
 
 
-####Household benefits
+####Household benefits from only complete ISFM 5 components 
 
-children_benefits <- discount (children_benefits, discount_rate = discount_rate, 
+children_benefits <- discount (children_benefits_total, discount_rate = discount_rate, 
                                calculate_NPV = TRUE)
 
-women_benefits <- discount (women_benefits, discount_rate = discount_rate, 
+women_benefits <- discount (women_benefits_total, discount_rate = discount_rate, 
                             calculate_NPV = TRUE)
 
-men_benefits <- discount (men_benefits, discount_rate = discount_rate, 
+men_benefits <- discount (men_benefits_total, discount_rate = discount_rate, 
                           calculate_NPV = TRUE)
-
-household_benefits <- discount (household_benefits, discount_rate = discount_rate, 
-                                calculate_NPV = TRUE)
 
 
 ###Calling anything I need to plot##
@@ -922,7 +922,6 @@ return(list(profit_statusquo = statusquo_profit,
             children_benefits = children_benefits,
             women_benefits = women_benefits,
             men_benefits = men_benefits,
-            household_benefits = household_benefits,
             NPV_statusquo = NPV_sq,
             NPV_component1 = NPV_comp1,
             NPV_component2 = NPV_comp2,
@@ -1049,14 +1048,14 @@ ggsave("environmental_boxplot.png", plot = env_plot_box, width = 10, height = 8,
 
 ##Household benefits visualization
 
-household_table<-mc_result_ISFM [,c(14:17)] 
+household_table<-mc_result_ISFM [,c(14:16)] 
 
 house_data_frame <- data.frame(household_table)
 
 ###Changing arrangement of household data###
 
 household_ISFM <- house_data_frame %>% 
-  pivot_longer(cols = y.children_benefits:y.household_benefits, names_to = "ISFM_Components",
+  pivot_longer(cols = y.children_benefits:y.men_benefits, names_to = "ISFM_Components",
                values_to = 'household_benefits')
 
 
@@ -1107,7 +1106,7 @@ ggsave("household_smooth.png", plot = household_smooth, width = 10, height = 8, 
 
 ## Economic Net Present Value with all the benefits put together##
 
-npv_table<-mc_result_ISFM [,c(19:23)] 
+npv_table<-mc_result_ISFM [,c(18:22)] 
 
 
 npv_data_frame <- data.frame(npv_table)
@@ -1128,7 +1127,7 @@ npvplot_box= ggplot(ISFM_npv, aes(x = NPV, fill = ISFM_Components, color= ISFM_C
   geom_boxplot()+
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Net Present Value ($) compared to 5000 $ NPV statusquo") ###change this to actual NPV statusquo value
+  xlab("Net Present Value ($) compared to 207.2-222.3 $ NPV statusquo") ###change this to actual NPV statusquo value
 
 
 #### Visualization of Box plot #### 
@@ -1150,7 +1149,7 @@ npvplot_smooth= ggplot(ISFM_npv, aes(x = NPV, fill = ISFM_Components, color= ISF
   geom_density(alpha = 0.05)+  
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Net Present Value ($) compared to 5000 $ NPV statusquo") ###change this to actual statusquo value
+  xlab("Net Present Value ($) compared to 207.2-222.3 $ NPV statusquo") ###change this to actual statusquo value
 
 npv_smooth <-npvplot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
   theme(legend.title = element_blank())+
@@ -1178,6 +1177,10 @@ plot_pls_ISFM <- plot_pls(pls_ISFM, threshold = 0.8,
 
 plot_pls_ISFM
 
+#save pls plot 
+ggsave("pls.png", plot = plot_pls_ISFM, width = 10, height = 8, dpi = 300)
+
+
 
 #### Expected Value of Perfect information (EVPI) Voi analysis ####
 
@@ -1186,7 +1189,7 @@ ISFM_voi <- data.frame (ISFM_mc_simulation$x, ISFM_mc_simulation$y[1:22])
 evpi_ISFM <- multi_EVPI(mc= ISFM_voi, first_out_var = "profit_statusquo")
 
 
-##Plotting EVPI
+##Plotting EVPI for ISFM NPV only
 
 plot_evpi1 <- plot_evpi(evpi_ISFM, decision_vars = "NPV_component1")
 
