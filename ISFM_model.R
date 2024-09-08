@@ -485,9 +485,9 @@ weed_suppression <-vv (percent_weed * weed_management_price,
                        n= years) 
 
 
-####Household benefits ####
+#### Social benefits ####
 
-###Household health###
+### Health ###
 
 ##Household Dietary diversity (HDD) 
 ##This might be affected if soils are poor due to no fertilization- crops do not get enough nutrients for healthy diets (hidden hunger)
@@ -514,9 +514,21 @@ contamination <- vv(percent_contamination_reduction * health_expenditure,
                     n= years)* farmers_risks 
 
 ##Stable mental health leads to happiness and healthy life
-mental_health <- vv(mental_health_incidence* health_expenditure,
+
+#Women mental health will be affected by Gender based violence 
+if_GBV <- chance_event(GBV_probability, 
+                       value_if = percentage_GBV, 
+                       value_if_not = 1,
+                       n= years)
+#for men 
+mental_health_men <- vv(mental_health_incidence* health_expenditure,
                     var_CV = var_cv,
                     n= years)
+#for women
+mental_health_women <- vv(mental_health_incidence* health_expenditure,
+                    var_CV = var_cv,
+                    n= years) * if_GBV
+
 
 ##Less mineral fertilizer will reduce GHG emission ##
 ##Reduced Greenhouse gases * Nitrous oxide emissions from N fertilizer
@@ -536,50 +548,22 @@ GHG <- (vv (nitrous_oxide,
 
 reduced_GHG <- (GHG * health_expenditure)
 
+####Health Benefits per gender####
+#Different gender will not benefit equally from health benefits especially women who take care of their families wellbeing and are affected by GBV
 
-####Benefits per member of the household####
-#members of the household will not benefit equally from household health especially women who take care of their families wellbeing
-
-children_health <- (nutrition + food_availability + reduced_GHG
-                    + contamination)
-
-women_health <- (nutrition + food_availability + reduced_GHG + contamination)
+women_health <- (nutrition + food_availability + reduced_GHG 
+                 + contamination + mental_health_women)
 
 men_health <- (nutrition + food_availability + reduced_GHG
-               + contamination + mental_health)
-
-##Children##
-#Children only get nutrition, education and inherit fertile land, they don't get the profit 
-#However if there is profit, children get to go to school 
+               + contamination + mental_health_men)
 
 
-children_education <- chance_event(profit_probability,
-                                   value_if = children_school_fees,
-                                   value_if_not = 1,
-                                   n= years)
-                        
+##Social benefits for Men ##
 
-#Children get to learn from their parents while helping them in the field
-#They would not need to pay extension officers for this service
-
-agric_knowledge <- vv(var_mean = training, 
-                var_CV = var_cv, 
-                n= years) 
-
-
-
-#if proper land tenure systems and good agricultural practices, children inherit healthy lands  
-land_inheritance <- vv(land,
-                          var_CV = var_cv,
-                          n= years,
-                          relative_trend = inflation)
-
-
-children_benefits_raw <-(children_health + agric_knowledge
-                    + children_education + land_inheritance)
-
-
-##Men ##
+#proper land tenure systems and good agricultural practices gives healthy lands which increases its value 
+healthly_land <- vv(land,
+                    var_CV = var_cv,
+                    n= years)
 
 #More assets which will lead to high social status which might also increase opportunities, access
 
@@ -606,7 +590,7 @@ schock_resilience <- vv(insurance_price,
                         n= years,
                         relative_trend = inflation)* (1-maize_risks) * (1-soybean_risks)
   
-men_benefits_raw <- (men_health + social_status 
+men_social_benefits <- (men_health + healthly_land + social_status 
                 + agric_knowledge + schock_resilience)   
 
   
@@ -668,18 +652,23 @@ agric_knowledge <- vv(var_mean = training,
                       n= years) 
 
 
-
 ###All women benefits put together and discounted in case of Gender Based Violeonce 
-women_benefits_1 <- (women_health + agency 
-              + network + agric_knowledge )
+women_social_benefits_1 <- (women_health + agency 
+              + network + agric_knowledge + schock_resilience)
               
-women_benefits_raw <- (women_benefits_1 - additional_labor) * 
+women_social_benefits<- (women_social_benefits_1 - additional_labor) * 
                   (1-GBV)
+
+
+###Social benefits for the system 
+#Average of men and women social benefits 
+
+social_benefits_raw <- (men_social_benefits + women_social_benefits)/2
 
 
 #### TOTAL ECONOMIC BENEFITS of ISFM ####
 #### 4 layers of benefits  ####
-#profit + soil benefits + household benefits, and all together to get the systems benefits
+#profit + environmental benefits + social benefits and all together to get the systems benefits
 
 
 ####Profit####
@@ -738,42 +727,38 @@ component5_env_raw <- (fixed_Nitrogen + saved_carbon + SOC +
 component5_env <- component5_env_raw - statusquo_env
 
 
-
-#####Farm level all household benefits ####
-household_benefits <- children_benefits_raw + women_benefits_raw + men_benefits_raw
-
-#####Farm level Household benefits after exchange rate ####
-household_benefits_raw <- household_benefits/exchange_rate
+#####Farm soil benefits after exchange rate ####
+social_benefits <- social_benefits_raw/exchange_rate
 
 ####Total benefits####
 #ISFM components benefits
 
 total_benefit_sq <- (statusquo_profit)
-statusquo_range <- range(total_benefit_sq)
+statusquo_range <- range(total_benefit_sq) #to know the range of the status quo NPV
 
-total_benefit_1 <- (component1_profit + component1_env + household_benefits_raw)
+total_benefit_1 <- (component1_profit + component1_env + social_benefits)
 
-total_benefit_2 <- (component2_profit + component2_env + household_benefits_raw)
+total_benefit_2 <- (component2_profit + component2_env + social_benefits)
 
-total_benefit_3 <- (component3_profit + component3_env + household_benefits_raw)
+total_benefit_3 <- (component3_profit + component3_env + social_benefits)
 
-total_benefit_4 <- (component4_profit + component4_env + household_benefits_raw)
+total_benefit_4 <- (component4_profit + component4_env + social_benefits)
 
-total_benefit_5 <- (component5_profit + component5_env + household_benefits_raw)
-
-
-##### Farm level Household benefits per household member ####
-
-children_benefits_total <- (children_benefits)
+total_benefit_5 <- (component5_profit + component5_env + social_benefits)
 
 
-women_benefits_profit <- chance_event(if_access, 
-                                 value_if = component5_profit,
-                                 value_if_not = women_benefits)
+##### Farm level benefits of complete ISFM disagragated by gender ####
+
+#Women benefits are affected by access to resources and information 
+
+women_access_probability <- chance_event(probability_women_access, 
+                                 value_if = percentage_women_access, #multiplier when there women don't have access to ressources and information
+                                 value_if_not = 1,
+                                 n= years)
   
-women_benefits_total <- (women_benefits_profit)
+women_benefits_total <- (women_social_benefits+ component5_profit + component5_env ) * women_access_probability
 
-men_benefits_total <- (men_benefits + component5_profit + component5_env)
+men_benefits_total <- (men_social_benefits + component5_profit + component5_env)
 
 
 ####ANALYSIS####
@@ -782,6 +767,10 @@ men_benefits_total <- (men_benefits + component5_profit + component5_env)
 #Cashflow analysis: projected trend of monetary return based on the profit
 #Discount rate is time value for money
 
+#Social benefits are equally distributed across all components of ISFM 
+
+NPV_social_benefits <- discount(social_benefits, discount_rate = discount_rate, 
+                                calculate_NPV = TRUE)
 
 ##Status quo ##
 
@@ -894,46 +883,59 @@ cumulative_cashflow_5 <- cumsum(cashflow_5)
 
 ####Household benefits from only complete ISFM 5 components 
 
-children_benefits <- discount (children_benefits_total, discount_rate = discount_rate, 
-                               calculate_NPV = TRUE)
-
+#women cashflow
 women_benefits <- discount (women_benefits_total, discount_rate = discount_rate, 
                             calculate_NPV = TRUE)
+
+cashflow_women <- discount (women_benefits_total, discount_rate = discount_rate,
+                        calculate_NPV = FALSE)
+
+cumulative_cashflow_women <- cumsum(cashflow_women)
+
+#men cashflow
 
 men_benefits <- discount (men_benefits_total, discount_rate = discount_rate, 
                           calculate_NPV = TRUE)
 
 
+cashflow_men <- discount (men_benefits_total, discount_rate = discount_rate,
+                        calculate_NPV = FALSE)
+
+cumulative_cashflow_men <- cumsum(cashflow_men)
+
+
 ###Calling anything I need to plot##
 ##profit, environmental, household and total of all benefits ##
 
-return(list(profit_statusquo = statusquo_profit,
-            profit_component1 = component1_profit,
-            profit_component2 = component2_profit,
-            profit_component3 = component3_profit,
-            profit_component4 = component4_profit,
-            profit_component5 = component5_profit,
-            environmental_benefit_sq= statusquo_env,
-            environmental_benefit1 = component1_env,
-            environmental_benefit2 = component2_env,
-            environmental_benefit3 = component3_env,
-            environmental_benefit4 = component4_env,
-            environmental_benefit5 = component5_env,
-            children_benefits = children_benefits,
-            women_benefits = women_benefits,
-            men_benefits = men_benefits,
+return(list(Profit_statusquo = statusquo_profit,
+            Profit_component1 = component1_profit,
+            Profit_component2 = component2_profit,
+            Profit_component3 = component3_profit,
+            Profit_component4 = component4_profit,
+            Profit_component5 = component5_profit,
+            Environmental_benefit_sq= statusquo_env,
+            Environmental_benefit1 = component1_env,
+            Environmental_benefit2 = component2_env,
+            Environmental_benefit3 = component3_env,
+            Environmental_benefit4 = component4_env,
+            Environmental_benefit5 = component5_env,
+            Social_benefits = NPV_social_benefits,
+            Women_benefits = women_benefits,
+            Men_benefits = men_benefits,
             NPV_statusquo = NPV_sq,
             NPV_component1 = NPV_comp1,
             NPV_component2 = NPV_comp2,
             NPV_component3 = NPV_comp3,
             NPV_component4 = NPV_comp4,
             NPV_component5 = NPV_comp5,
-            cashflow_statusquo = cumulative_cashflow_sq,
-            cashflow_comp1= cumulative_cashflow_1,
-            cashflow_comp2= cumulative_cashflow_2,
-            cashflow_comp3= cumulative_cashflow_3,
-            cashflow_comp4= cumulative_cashflow_4,
-            cashflow_comp5= cumulative_cashflow_5 ))
+            Cashflow_statusquo = cumulative_cashflow_sq,
+            Cashflow_comp1= cumulative_cashflow_1,
+            Cashflow_comp2= cumulative_cashflow_2,
+            Cashflow_comp3= cumulative_cashflow_3,
+            Cashflow_comp4= cumulative_cashflow_4,
+            Cashflow_comp5= cumulative_cashflow_5, 
+            Men_cashflow= cumulative_cashflow_men,
+            Women_cashflow= cumulative_cashflow_women))
 }
 
 
@@ -941,7 +943,7 @@ return(list(profit_statusquo = statusquo_profit,
 
 ISFM_mc_simulation <- mcSimulation(as.estimate(table), 
                               model_function = system_benefits,
-                              numberOfModelRuns = 1000,
+                              numberOfModelRuns = 10000,
                               functionSyntax = "plainNames")
 
 write.csv(ISFM_mc_simulation, "./ISFM_mc_simulation_results.csv")
@@ -980,7 +982,7 @@ profit_data_frame <- data.frame(profit_table)
 
 
 ISFM_profit <- profit_data_frame %>% 
-  pivot_longer(cols = y.profit_component1:y.profit_component5, names_to = "ISFM_Components",
+  pivot_longer(cols = y.Profit_component1:y.Profit_component5, names_to = "ISFM_Components",
                values_to = 'Profit')
 
 
@@ -988,11 +990,20 @@ ISFM_profit <- profit_data_frame %>%
 
 ### Box plot to see how they overlap ###
 
-profit_plot_box= ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, color= ISFM_Components)) +                       
-  geom_boxplot()+
-  scale_fill_colorblind()+
-  ylab("Probability density")+
-  xlab("Farm Profit ($) compared to -452 to -474 $ statusquo") ###change this to actual statusquo value
+profit_plot_box = ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, color= ISFM_Components)) +                       
+  geom_boxplot() +
+  scale_fill_colorblind() +
+  ylab("Probability density") +
+  xlab("Farm Profit ($)") +
+  theme(
+    axis.title.x = element_text(size = 16),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 16),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 16),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 16),     # Increase y-axis text font size
+    legend.title = element_text(size = 16),    # Increase legend title font size
+    legend.text = element_text(size = 16)    # Increase legend text font size
+  )
+
 
 profit_plot_box
 
@@ -1006,12 +1017,21 @@ profit_plot_smooth= ggplot(ISFM_profit, aes(x = Profit, fill = ISFM_Components, 
   geom_density(alpha = 0.05)+  
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Farm Profit ($) compared to -452 to -474 $ statusquo") ###change this to actual statusquo value
+  xlab("Farm Profit ($)") 
 
-profit_plot_smooth <- profit_plot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
-  theme(legend.title = element_blank())+
-  ggtitle("Farm- level profit of Integrated Soil Fertility Management")+
-  theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
+
+profit_plot_smooth <- profit_plot_smooth + 
+  theme_bw() +
+  theme(
+    legend.position = c(.7, .8),
+    legend.title = element_blank(),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Increase title font size
+    axis.title.x = element_text(size = 16),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 16),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 16),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 16),     # Increase y-axis text font size
+    legend.text = element_text(size = 16)      # Increase legend text font size
+  )
 
 
 profit_plot_smooth
@@ -1027,7 +1047,7 @@ environmental_table<-mc_result_ISFM [,c(9:13)]
 env_data_frame <- data.frame(environmental_table)
 
 ISFM_env <- env_data_frame %>% 
-  pivot_longer(cols = y.environmental_benefit1:y.environmental_benefit5, names_to = "ISFM_Components",
+  pivot_longer(cols = y.Environmental_benefit1:y.Environmental_benefit5, names_to = "ISFM_Components",
                values_to = 'Environmental_benefits')
 
 #### Plotting  environmental benefits ####
@@ -1037,7 +1057,15 @@ env_plot_box= ggplot(ISFM_env, aes(x = Environmental_benefits, fill = ISFM_Compo
   geom_boxplot()+
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Environmental benefits (in USD)")
+  xlab("Environmental benefits ($)") + 
+  theme(
+    axis.title.x = element_text(size = 16),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 16),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 16),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 16),     # Increase y-axis text font size
+    legend.title = element_text(size = 16),    # Increase legend title font size
+    legend.text = element_text(size = 16)    # Increase legend text font size
+  )
 
 env_plot_box
 
@@ -1045,66 +1073,7 @@ env_plot_box
 ggsave("environmental_boxplot.png", plot = env_plot_box, width = 10, height = 8, dpi = 300)
 
 
-
-##Household benefits visualization
-
-household_table<-mc_result_ISFM [,c(14:16)] 
-
-house_data_frame <- data.frame(household_table)
-
-###Changing arrangement of household data###
-
-household_ISFM <- house_data_frame %>% 
-  pivot_longer(cols = y.children_benefits:y.men_benefits, names_to = "ISFM_Components",
-               values_to = 'household_benefits')
-
-
-#### Plotting  household distribution ####
-
-### Box plot ###
-
-household_plot_box= ggplot(household_ISFM, aes(x = household_benefits, fill = ISFM_Components, color= ISFM_Components)) +                       
-  geom_boxplot()+
-  scale_fill_colorblind()+
-  ylab("Probability density")+
-  xlab("Benefits (in USD)")
-
-
-household_box<-household_plot_box+ theme_bw() +theme(legend.position = c(.7, .8))+
-  theme(legend.title = element_blank())+
-  ggtitle("Household benefits of Integrated Soil Fertility Management")+
-  theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
-
-household_box
-
-#save household benefits boxplot 
-ggsave("household_boxplot.png", plot = household_box, width = 10, height = 8, dpi = 300)
-
-
-
-## Smooth density 
-
-household_smooth= ggplot(household_ISFM, aes(x = household_benefits, fill = ISFM_Components, color= ISFM_Components)) +                       
-  geom_density(alpha = 0.05)+  
-  scale_fill_colorblind()+
-  ylab("Probability density")+
-  xlab("Benefits (in USD)")
-
-### Visualization of smooth plot
-
-household_smooth <- household_smooth + theme_bw() +theme(legend.position = c(.7, .8))+
-  theme(legend.title = element_blank())+
-  ggtitle("Household benefits of Integrated Soil Fertility Management")+
-  theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
-
-household_smooth
-
-#saving household benefits smooth plot
-ggsave("household_smooth.png", plot = household_smooth, width = 10, height = 8, dpi = 300)
-
-
-
-## Economic Net Present Value with all the benefits put together##
+## Economic Net Present Value with all the benefits (profit, environmental and social) put together##
 
 npv_table<-mc_result_ISFM [,c(18:22)] 
 
@@ -1127,21 +1096,22 @@ npvplot_box= ggplot(ISFM_npv, aes(x = NPV, fill = ISFM_Components, color= ISFM_C
   geom_boxplot()+
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Net Present Value ($) compared to 207.2-222.3 $ NPV statusquo") ###change this to actual NPV statusquo value
+  xlab("Net Present Value ($)") +
+  theme(
+    axis.title.x = element_text(size = 16),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 16),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 16),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 16),     # Increase y-axis text font size
+    legend.title = element_text(size = 16),    # Increase legend title font size
+    legend.text = element_text(size = 16)    # Increase legend text font size
+  )
 
+npvplot_box
 
-#### Visualization of Box plot #### 
-
-npv_box<-npvplot_box+ theme_bw() +theme(legend.position = c(.7, .8))+
-  theme(legend.title = element_blank())+
-  ggtitle("Economic benefits of Integrated Soil Fertility Management")+
-  theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
-
-
-npv_box
 
 #save NPV boxplot 
-ggsave("NPV_boxplot.png", plot = npv_box, width = 10, height = 8, dpi = 300)
+
+ggsave("NPV_boxplot.png", plot = npvplot_box, width = 10, height = 8, dpi = 300)
 
 ## Smooth density 
 
@@ -1149,19 +1119,89 @@ npvplot_smooth= ggplot(ISFM_npv, aes(x = NPV, fill = ISFM_Components, color= ISF
   geom_density(alpha = 0.05)+  
   scale_fill_colorblind()+
   ylab("Probability density")+
-  xlab("Net Present Value ($) compared to 207.2-222.3 $ NPV statusquo") ###change this to actual statusquo value
+  xlab("Net Present Value ($)") + 
+  theme(
+    legend.position = c(.8, .9),
+    legend.title = element_blank(),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Increase title font size
+    axis.title.x = element_text(size = 16),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 16),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 16),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 16),     # Increase y-axis text font size
+    legend.text = element_text(size = 16)      # Increase legend text font size
+  )
 
-npv_smooth <-npvplot_smooth+ theme_bw() +theme(legend.position = c(.7, .8))+
-  theme(legend.title = element_blank())+
-  ggtitle("Economic benefits of Integrated Soil Fertility Management")+
-  theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
 
-
-npv_smooth
-
+npvplot_smooth
 
 #save NPV smooth 
-ggsave("NPV_smooth.png", plot = npv_smooth, width = 10, height = 8, dpi = 300)
+ggsave("NPV_smooth.png", plot = npvplot_smooth, width = 10, height = 8, dpi = 300)
+
+
+##NPV visualization disagrageted by gender for only full ISFM
+
+gendered_benefits_table<-mc_result_ISFM[,c(15:16)] 
+
+gendered_data_frame <- data.frame(gendered_benefits_table)
+
+###Changing arrangement of social benefits data###
+
+gendered_benefits_ISFM <- gendered_data_frame %>% 
+  pivot_longer(cols = y.Women_benefits:y.Men_benefits, names_to = "gender",
+               values_to = 'gendered_benefits')
+
+
+#### Plotting Gendered NPV distribution ####
+
+### Box plot ###
+
+gendered_plot_box= ggplot(gendered_benefits_ISFM, aes(x = gendered_benefits, fill = gender, color= gender)) +                       
+  geom_boxplot()+
+  scale_fill_colorblind()+
+  ylab("Probability density")+
+  xlab("NPV ($)") + 
+  theme(
+    legend.position = c(.8, .9),
+    legend.title = element_blank(),
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Increase title font size
+    axis.title.x = element_text(size = 16),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 16),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 16),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 16),     # Increase y-axis text font size
+    legend.text = element_text(size = 16),    # Increase legend text font size
+    )
+
+gendered_plot_box
+
+#save household benefits boxplot 
+ggsave("gendered_boxplot.png", plot = gendered_box, width = 10, height = 8, dpi = 300)
+
+
+
+## Smooth density 
+
+gendered_smooth= ggplot(gendered_benefits_ISFM, aes(x = gendered_benefits, fill = gender, color= gender)) +                       
+  geom_density(alpha = 0.05)+  
+  scale_fill_colorblind()+
+  ylab("Probability density")+
+  xlab("Gendered NPV ($)") +
+  theme(
+  legend.position = c(.8, .9),
+  legend.title = element_blank(),
+  plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Increase title font size
+  axis.title.x = element_text(size = 16),    # Increase x-axis title font size
+  axis.title.y = element_text(size = 16),    # Increase y-axis title font size
+  axis.text.x = element_text(size = 16),     # Increase x-axis text font size
+  axis.text.y = element_text(size = 16),     # Increase y-axis text font size
+  legend.text = element_text(size = 16),    # Increase legend text font size
+)
+
+gendered_smooth
+
+#saving household benefits smooth plot
+ggsave("gendered_smooth.png", plot = gendered_smooth, width = 10, height = 8, dpi = 300)
+
+
 
 #### SENSITIVITY ANALYSIS #### 
 
@@ -1173,7 +1213,17 @@ pls_ISFM <-  plsr.mcSimulation(object = ISFM_mc_simulation,
 plot_pls_ISFM <- plot_pls(pls_ISFM, threshold = 0.8,
                           base_size = 10,
                           pos_color = "skyblue", neg_color = "red")+
-  labs(title = "Projection to Latent structure (PLS) regression of ISFM", size= 8)
+labs(title = "Projection to Latent structure (PLS) regression of ISFM", size= 8) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Increase title font size
+    axis.title.x = element_text(size = 16),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 16),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 16),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 16),     # Increase y-axis text font size
+    legend.text = element_text(size = 16),     # Increase legend text font size
+    legend.title = element_text(size = 16)     # Increase legend title font size
+  )
+
 
 plot_pls_ISFM
 
@@ -1181,15 +1231,14 @@ plot_pls_ISFM
 ggsave("pls.png", plot = plot_pls_ISFM, width = 10, height = 8, dpi = 300)
 
 
-
 #### Expected Value of Perfect information (EVPI) Voi analysis ####
 
-ISFM_voi <- data.frame (ISFM_mc_simulation$x, ISFM_mc_simulation$y[1:22])
+ISFM_voi <- data.frame (ISFM_mc_simulation$x, ISFM_mc_simulation$y[1:21])
 
-evpi_ISFM <- multi_EVPI(mc= ISFM_voi, first_out_var = "profit_statusquo")
+evpi_ISFM <- multi_EVPI(mc= ISFM_voi, first_out_var = "Profit_statusquo")
 
 
-##Plotting EVPI for ISFM NPV only
+##Plotting EVPI for ISFM NPV only since the NPVs includes all the other layers of benefits
 
 plot_evpi1 <- plot_evpi(evpi_ISFM, decision_vars = "NPV_component1")
 
@@ -1215,96 +1264,191 @@ compound_evpi
 #Cashflow status quo
 
 cashflowsq <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-                           cashflow_var_name = "cashflow_statusquo",
+                           cashflow_var_name = "Cashflow_statusquo",
                            x_axis_name = "Years of intervention",
                            y_axis_name = "Cashflow in US Dollars",
                            color_25_75 = "grey",
                            color_5_95 = "yellow",
                            color_median= "red",
-                           base= 10)
+                           base= 16) +
+  theme(
+    axis.title.x = element_text(size = 14),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 14),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 14),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 14),     # Increase y-axis text font size
+    legend.text = element_text(size = 14),     # Increase legend text font size
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)  # Increase title font size
+  )
 
 cashflowsq
 
 #Cashflow for component 1 
 
 cashflow1 <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-                           cashflow_var_name = "cashflow_comp1",
+                           cashflow_var_name = "Cashflow_comp1",
                            x_axis_name = "Years of intervention",
                            y_axis_name = "Cashflow in US Dollars",
                            color_25_75 = "grey",
                            color_5_95 = "yellow",
                            color_median= "red",
-                           base= 10)
+                           base= 16)+
+  theme(
+    axis.title.x = element_text(size = 14),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 14),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 14),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 14),     # Increase y-axis text font size
+    legend.text = element_text(size = 14),     # Increase legend text font size
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)  # Increase title font size
+  )
 
 
 #Cashflow for component 2 
 
 cashflow2 <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-                           cashflow_var_name = "cashflow_comp2",
+                           cashflow_var_name = "Cashflow_comp2",
                            x_axis_name = "Years of intervention",
                            y_axis_name = "Cashflow in US Dollars",
                            color_25_75 = "grey",
                            color_5_95 = "yellow",
                            color_median= "red",
-                           base= 10)
+                           base= 16)+
+  theme(
+    axis.title.x = element_text(size = 14),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 14),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 14),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 14),     # Increase y-axis text font size
+    legend.text = element_text(size = 14),     # Increase legend text font size
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)  # Increase title font size
+  )
 
 
 #Cashflow for component 3 
 
 cashflow3 <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-                           cashflow_var_name = "cashflow_comp3",
+                           cashflow_var_name = "Cashflow_comp3",
                            x_axis_name = "Years of intervention",
                            y_axis_name = "Cashflow in US Dollars",
                            color_25_75 = "grey",
                            color_5_95 = "yellow",
                            color_median= "red",
-                           base= 10)
+                           base= 16) +
+  theme(
+    axis.title.x = element_text(size = 14),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 14),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 14),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 14),     # Increase y-axis text font size
+    legend.text = element_text(size = 14),     # Increase legend text font size
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)  # Increase title font size
+  )
 
 
 #Cashflow for component 4 
 
 cashflow4 <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-                           cashflow_var_name = "cashflow_comp4",
+                           cashflow_var_name = "Cashflow_comp4",
                            x_axis_name = "Years of intervention",
                            y_axis_name = "Cashflow in US Dollars",
                            color_25_75 = "grey",
                            color_5_95 = "yellow",
                            color_median= "red",
-                           base= 10)
+                           base= 16) +
+  theme(
+    axis.title.x = element_text(size = 14),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 14),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 14),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 14),     # Increase y-axis text font size
+    legend.text = element_text(size = 14),     # Increase legend text font size
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)  # Increase title font size
+  )
 
 
 #Cashflow for component 5
 
 cashflow5 <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-                           cashflow_var_name = "cashflow_comp5",
+                           cashflow_var_name = "Cashflow_comp5",
                            x_axis_name = "Years of intervention",
                            y_axis_name = "Cashflow in US Dollars",
                            color_25_75 = "grey",
                            color_5_95 = "yellow",
                            color_median= "red",
-                           base= 10)
+                           base= 16) +
+  theme(
+    axis.title.x = element_text(size = 14),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 14),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 14),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 14),     # Increase y-axis text font size
+    legend.text = element_text(size = 14),     # Increase legend text font size
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)  # Increase title font size
+  )
 
 
-###Putting the Cashflows in one frame ###
+###Putting the ISFM Cashflows in one frame ###
 
 library(patchwork)
 
-cashflow_all <- (cashflowsq + cashflow1 + cashflow2 + cashflow3
-+ cashflow4 + cashflow5) + 
-plot_annotation(title = "Cashflow of statusquo and 5 components of ISFM")
+ISFM_cashflow_all <- (cashflowsq + cashflow1 + cashflow2 + cashflow3
++ cashflow4 + cashflow5)
 
-cashflow_all
+ISFM_cashflow_all
 
 
 #save cashflow plot 
-ggsave("cashflow.png", plot = cashflow_all, width = 10, height = 8, dpi = 300)
+ggsave("ISFM_cashflow.png", plot = ISFM_cashflow_all, width = 15, height = 10, dpi = 300)
 
 
+#Gender disagregated cashflows #####START HERE
+
+#Women cashflow
+
+women_cashflow <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
+                              cashflow_var_name = "Women_cashflow",
+                              x_axis_name = "Years of intervention",
+                              y_axis_name = "Cashflow in US Dollars",
+                              color_25_75 = "grey",
+                              color_5_95 = "yellow",
+                              color_median= "red",
+                              base= 16)+
+  theme(
+    axis.title.x = element_text(size = 14),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 14),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 14),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 14),     # Increase y-axis text font size
+    legend.text = element_text(size = 14),     # Increase legend text font size
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)  # Increase title font size
+  )
+
+women_cashflow
 
 
+#Men cashflow 
+
+men_cashflow <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
+                           cashflow_var_name = "Men_cashflow",
+                           x_axis_name = "Years of intervention",
+                           y_axis_name = "Cashflow in US Dollars",
+                           color_25_75 = "grey",
+                           color_5_95 = "yellow",
+                           color_median= "red",
+                           base= 16)+
+  theme(
+    axis.title.x = element_text(size = 14),    # Increase x-axis title font size
+    axis.title.y = element_text(size = 14),    # Increase y-axis title font size
+    axis.text.x = element_text(size = 14),     # Increase x-axis text font size
+    axis.text.y = element_text(size = 14),     # Increase y-axis text font size
+    legend.text = element_text(size = 14),     # Increase legend text font size
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5)  # Increase title font size
+  )
+
+men_cashflow
+
+# Putting the gendered cashflow together 
+
+gendered_cashflow <- (men_cashflow + women_cashflow)
+
+gendered_cashflow
 
 
+#save gendered cashflow plot 
 
-
-
+ggsave("gendered_cashflow.png", plot = gendered_cashflow, width = 10, height = 8, dpi = 300)
 
