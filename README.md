@@ -10,7 +10,7 @@ In this repository a holistic model will be developed, translating a conceptual 
 
 ------------------------------------------------------------------------------------------------------------
 The conceptual model depicts an impact pathway of 5 ISFM components (from a few components toward complete ISFM with 5 components as adapted by Vanlauwe et al. (2010)).
-The numbers define the components.
+
 
 
 
