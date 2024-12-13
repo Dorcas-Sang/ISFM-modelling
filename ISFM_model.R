@@ -697,10 +697,14 @@ gender_based_violence_occurence <-
 
 
 ###All women benefits put together and discounted in case of the above risks 
+women_risks <- min(gender_based_violence_occurence,
+                   women_additional_labor,
+                  land_security,
+                  women_access)
+  
 women_social_benefits_raw <- (health + network 
-     + value_of_knowledge_gained + schock_resilience) *
-  ((gender_based_violence_occurence)+ (women_additional_labor)
-   +(land_security)+(women_access))
+     + value_of_knowledge_gained + schock_resilience) * women_risks
+ 
 
 women_social_benefits <- women_social_benefits_raw/exchange_rate
 
@@ -808,17 +812,17 @@ men_benefit_by_adoption <- discount(men_total_benefit, discount_rate = discount_
 ##profit, environmental, social and total of all benefits ##
 
 return(list(Profit_statusquo = statusquo_profit,
-            Profit_component1 = component1_profit,
-            Profit_component2 = component2_profit,
-            Profit_component3 = component3_profit,
-            Profit_component4 = component4_profit,
-            Profit_component5 = component5_profit,
+            Profit_improved_seed = component1_profit,
+            Profit_inorganic_fertilizer = component2_profit,
+            Profit_organic_fertilizer = component3_profit,
+            Profit_fertilizer_combination = component4_profit,
+            Profit_minimum_tillage = component5_profit,
             NPV_statusquo = NPV_sq,
-            NPV_component1 = NPV_comp1,
-            NPV_component2 = NPV_comp2,
-            NPV_component3 = NPV_comp3,
-            NPV_component4 = NPV_comp4,
-            NPV_component5 = NPV_comp5,
+            NPV_improved_seed = NPV_comp1,
+            NPV_inorganic_fertilizer = NPV_comp2,
+            NPV_organic_fertilizer = NPV_comp3,
+            NPV_fertilizer_combination = NPV_comp4,
+            NPV_minimum_tillage = NPV_comp5,
             Women_benefit = women_benefit_by_adoption,
             Men_benefit= men_benefit_by_adoption ))
 }
@@ -859,9 +863,9 @@ palette_colors <- brewer.pal(5, "Set2") # for boxplot colors
 
 profit_box_plot <- plot_distributions(
   mcSimulation_object = ISFM_mc_simulation,
-  vars = c("Profit_component1", "Profit_component2",
-           "Profit_component3", "Profit_component4",
-           "Profit_component5"),
+  vars = c("Profit_improved_seed", "Profit_inorganic_fertilizer",
+           "Profit_organic_fertilizer", "Profit_fertilizer_combination",
+           "Profit_minimum_tillage"),
   method = 'boxplot',
   colors = palette_colors,
   base_size = 20
@@ -885,14 +889,13 @@ ggsave("profit_boxplot.png", plot = profit_box_plot,
 
 ### Box plot ###
 npv_box_plot <- plot_distributions(mcSimulation_object = ISFM_mc_simulation,
-                                   vars = c("NPV_component1", "NPV_component2",
-                                            "NPV_component3", "NPV_component4",
-                                            "NPV_component5"),
+                vars = c("NPV_improved_seed", "NPV_inorganic_fertilizer",
+                      "NPV_organic_fertilizer", "NPV_fertilizer_combination",
+                          "NPV_minimum_tillage"),
                                    method = 'boxplot',
-                        colors = c("#0000FF","#F0E442","#667","#F56", "#067"),
+          colors = c("#0000FF","#F0E442","#667","#F56", "#067"),
                                    base_size = 20) +
-  labs(
-    x = "Net present value (Euro)")
+  labs(x = "Net present value (Euro)")
 
 
 npv_box_plot
@@ -904,14 +907,13 @@ ggsave("NPV_boxplot.png", plot = npv_box_plot, width = 10, height = 8, dpi = 300
 
 ## Smooth plot for NPV
 npv_smooth_plot <- plot_distributions(mcSimulation_object = ISFM_mc_simulation,
-                                   vars = c("NPV_component1", "NPV_component2",
-                                            "NPV_component3", "NPV_component4",
-                                            "NPV_component5"),
+                 vars = c("NPV_improved_seed", "NPV_inorganic_fertilizer",
+                         "NPV_organic_fertilizer", "NPV_fertilizer_combination",
+                            "NPV_minimum_tillage"),
                                    method = 'smooth_simple_overlay',
-                          colors = c("#0000FF","#F0E442","#667","#F56", "#067"),
+                       colors = c("#0000FF","#F0E442","#667","#F56", "#067"),
                                    base_size = 20) +
-  labs(
-    x = "Net present value (Euro)") 
+  labs(x = "Net present value (Euro)") 
 
 npv_smooth_plot
 
@@ -934,8 +936,7 @@ gendered_box_plot <- plot_distributions(mcSimulation_object = ISFM_mc_simulation
                                    colors = c("#089","#F0E442"),
                                    base_size = 20) +
   labs(
-    x = "Net present value (Euro)",
-    y= "Benefit by gender") 
+    x = "Net present value (Euro)") 
 
 gendered_box_plot
 
@@ -943,6 +944,19 @@ gendered_box_plot
 #save gender benefits boxplot 
 ggsave("gendered_boxplot.png", plot = gendered_box_plot, width = 10, height = 8, dpi = 300)
 
+
+###Smooth plot 
+
+gendered_smooth_plot <- plot_distributions(mcSimulation_object = ISFM_mc_simulation,
+                                        vars = c("Women_benefit", 
+                                                 "Men_benefit"),
+                                        method = 'smooth_simple_overlay',
+                                        colors = c("#089","#F0E442"),
+                                        base_size = 20) +
+  labs(
+    x = "Net present value (Euro)") 
+
+gendered_smooth_plot
 
 
 
