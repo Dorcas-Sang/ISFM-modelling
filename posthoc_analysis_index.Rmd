@@ -1,0 +1,273 @@
+---
+title: " Impact pathways and forecast of Integrated Soil Fertility Management in northern Ghana"
+author: "Dorcas, Cory, Javier, Eike"
+date: "2024-12-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("gtExtras")
+#install.packages("svglite")
+#library(gtExtras)
+#library(svglite)
+
+```
+**Description**
+Using probabilistic modeling approaches, we are modeling the farm level benefits of Integrated Soil Fertility Managament (ISFM), a sustainable intensification practice. ISFM holds promise to improve soil fertility and increase productivity on the already exciting land for small-holder farmers in northern Ghana. ISFM is a set of the following components (below), starting with a few components as partial ISFM until complete ISFM.
+
+**Improved seed**
+As an entry point to ISFM, using improved and resilient seed has its own benefits and costs incurred as they are more expensive than the farmers seed. However farmers are aware that these improved seed yield more than their own seed. 
+
+**Inorganic fertilizer**
+Because soils are poor, they need to be replenished with additional nutrients. Using inorganic fertilizer such as NPK and urea on improved seed is the second layer in ISFM. This second layer of ISFM involves additional costs of buying the fertilizer and additional labor for fertilizer application.
+
+**Organic fertilizer**
+This includes using improved seed and the use of already available organic material such as crop residue and animal manure. However farmers are not always able to apply the amount of organic fertilizer needed for sufficient fertilization because the required amount is usually high.
+
+**Fertilizer combination**
+Because each type of fertilizer (organic or inorganic) has its unique characteristic and benefit, combining the two will have synergistic benefits that will be more beneficial than applying one alone on improved seed. Combining them also reduces the amount applied for each compared to when they are applied alone.
+
+**Minimum tillage**
+To avoid the compaction of soil with heavy machinery, tillage is recommended. However in the context of northern Ghana where zero tillage is almost impossible due to long drought and the nature of their soils, minimum tillage is recommended. Here farmers are also advised to avoid using tractors on their soils to tilt the land. 
+
+**Complete ISFM**
+When all the above components are fully adopted simultaneously.
+
+The 6 different practices are the decision options in a maize and soybean rotation system against the baseline of maize monoculture: 
+1. Use of Improved seed (As the entry point to ISFM)
+2. Improved seed and inorganic fertilizer 
+3. Improved seed and organic fertilizer 
+4. Improved seed and fertilizer combination (half organic and inorganic fertilizer)
+5. Improved seed and minimum tillage
+6. Improved seed, fertilizer combination and minimum tillage (Complete/full ISFM)
+
+The model will answer the following question: 
+**Should Agricultural Research and Development (AR4D) actors promote ISFM in northern Ghana? **
+
+The conceptual model of impact pathways of ISFM is described in the below figure.
+This model incorporate the costs, the benefits and the risks of each ISFM component. 
+
+![](figures/ current_ISFM-components-impact-pathways.png)
+Simplified conceptual model of the decision 
+
+![](figures/ simple_ISFM-impact-pathways.png)
+
+The conceptual model was translated into a mathematical model and run in MC simulation
+to find the plausible impact of ISFM and the most economic and sustainable business model. 
+
+# Montecarlo simulation for ISFM benefits and tradeoffs in Northern Ghana 
+
+Using the pre-built functions for the 6 ISFM decision options, we run an mc simulation  
+
+```{r mcSimulation, warning=FALSE, size= "huge", message=FALSE}
+# Source our model from the model script
+source("functions/ISFM_components_function.R")
+
+# Setting seed to ensure consistent results
+#each time we run the entire simulation 
+#set.seed(233) 
+
+ISFM_mc_simulation <- mcSimulation(as.estimate(ISFM_table), 
+                              model_function = ISFM_components_function,
+                              numberOfModelRuns = 10000,
+                              functionSyntax = "plainNames")
+```
+
+Plotting the different outcomes of the 6 decision options to find the most sustainable and economically viable option of ISFM based on the sustainable intensification assessment framework indicators. The most sustainable and beneficial option will be the one that will be assessed based on the different farmers typology later.
+
+```{r}
+#Arranging the Monte Carlo simulation data first
+
+library(tidyr)
+library(stringr)
+
+# Extract first 30 values from the simulation output 
+ISFM_impact_data <- ISFM_mc_simulation$y[1:30]
+
+# Pivot the data to long format
+ISFM_pivoted_outcome_data <- tidyr::pivot_longer(ISFM_impact_data,
+                                                 cols = everything(), 
+                                                 names_to = "Outcome with ISFM", 
+                                                 values_to = "Absolute_difference")
+
+# Extract full outcome type
+ISFM_pivoted_outcome_data["Outcome"] <- 
+  str_extract(ISFM_pivoted_outcome_data$`Outcome with ISFM`, 
+  "productivity|income|environmental|social|human")
+
+# Extract ISFM practice type by removing the identified outcome from the original column name
+ISFM_pivoted_outcome_data["Practices"] <-  
+  str_remove(ISFM_pivoted_outcome_data$`Outcome with ISFM`, 
+  "productivity|income|environmental|social|human")
+
+```
+
+We generate a radar (spider) plot that visualizes trade-offs between ISFM practices across different sustainable intensification outcomes (productivity, economic, environmental, social and human). These outcomes are compared to the statusquo. 
+
+```{r}
+#install.packages("ggradar", repos = "https://cloud.r-project.org")
+#install.packages("scales")
+#install.packages("ggplot2")
+
+#library(ggradar)
+#library(ggplot2)
+#library(scales)
+
+# We use means to summarize the outcome data for each practice
+ISFM_summary_data <- ISFM_pivoted_outcome_data %>%
+  group_by(Practices, Outcome) %>%
+  summarize(Absolute_difference = mean(Absolute_difference, na.rm = TRUE), .groups = "drop")
+
+#Transforming the data to wide format to easily visualize into a spider plot
+ISFM_radar_data <- ISFM_summary_data %>%
+  pivot_wider(names_from = Outcome, values_from = Absolute_difference, values_fill = list(Absolute_difference = 0))
+ISFM_radar_data[, -1] <- lapply(ISFM_radar_data[, -1], as.numeric)
+
+# Because we are dealing for large numbers and outcomes have different units, 
+#we normalize the outcomes values between 0 and 1 for visualization
+
+ISFM_radar_data[, -1] <- apply(ISFM_radar_data[, -1], 2, function(x) rescale(x, to = c(0, 1)))
+
+ISFM_radar_data <- ISFM_radar_data %>%
+  rename(group = Practices)
+
+ISFM_radar_plot <- ggradar(ISFM_radar_data,
+        grid.min = 0, grid.mid = 0.5, grid.max = 1,  
+        values.radar = c("0", "0.5", "1"),
+        group.colours = rainbow(nrow(ISFM_radar_data)),
+        legend.position = "bottom") +
+  ggtitle("Trade-offs between ISFM practices across sustainable intensification outcomes") +
+  theme(
+    text = element_text(size = 0.1),
+    plot.title = element_text(size = 15, face = "bold"),
+    legend.text = element_text(size = 8)  
+  ) + theme(aspect.ratio = 0.5)
+
+ISFM_radar_plot
+
+```
+To assess the stable component under uncertainty we did a stochastic dominance test which enables to know which decision option is the most risk-efficient.
+
+```{r}
+
+# Because our outcomes have different units, we normalize them using Min-Max Scaling (0 to 1)
+ISFM_pivoted_outcome_data_scaled <- ISFM_pivoted_outcome_data %>%
+  group_by(Outcome) %>% 
+  mutate(
+    Absolute_difference_scaled = (Absolute_difference - min(Absolute_difference, na.rm = TRUE)) / (max(Absolute_difference, na.rm = TRUE) - min(Absolute_difference, na.rm = TRUE))
+  ) %>%
+  ungroup()
+
+# We then compute cumulative probabilities for stochastic dominance test
+ISFM_cdf_data <- ISFM_pivoted_outcome_data_scaled %>%
+  group_by(Practices, Outcome) %>%
+  arrange(Absolute_difference_scaled) %>%
+  mutate(cdf = row_number() / n())
+
+# Plot Stochastic Dominance (CDFs for each practice)
+ggplot(ISFM_cdf_data, aes(x = Absolute_difference_scaled, y = cdf, color = Practices)) +
+  geom_line(size = 0.2) +
+  facet_wrap(~Outcome, scales = "free_x", drop = FALSE) + 
+  labs(title = "Stochastic Dominance across ISFM practices in northern Ghana",
+       x = "Scaled absolute difference of outcomes",
+       y = "Cumulative probability") +
+  theme_minimal() +
+  theme(legend.position = "right", text = element_text(size = 12))
+
+```
+
+Further, because farmers are not heterogeneous, they differ based on resources available to them, we identified important resources that could impact ISFM outcomes. We account for them as typology and assess how the most beneficial ISFM is affected by these vital resources. 
+
+```{r typology_graph, warning=FALSE, message=FALSE}
+
+factors <- data.frame(
+  Ressources = c("Land", "Agricultural inputs","Technical skills/knowledge",
+                 "Labor", "Market Linkages", 
+                 "Extension services", "Financial ressources", 
+            "Utilities (electricity, internet)", "Time"),
+  Strength = c(5, 5, 4, 4, 3, 3, 4, 0, 3)
+)
+
+ggplot(factors, aes(x=Strength, y=reorder(Ressources, Strength))) +
+  geom_point(size=5, color="darkgreen") +
+  theme_minimal() +
+  labs(title="Typology",
+       x="Strength", y="Ressources") +
+  geom_segment(aes(xend=0, yend=Ressources), color="lightgray")
+
+```
+
+Based on these identified typologies, we present the economic return of ISFM components. This encompasses how much income based on available resources, a farmer gets with ISFM compared to the statusquo. We represent this as cashflows when all resources are available versus when land, agricultural inputs and knowledge are vital resources. 
+
+```{r cashflow_plot, warning=FALSE, message=FALSE}
+
+#install.packages("gridExtra")
+library(gridExtra)
+
+cashflow_all_things_equal <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
+              cashflow_var_name = c("improved_seed", "mineral_fertilizer", "organic_fertilizer" , "fertilizer_combination", "tillage","complete_ISFM"),
+                          x_axis_name = "Years of intervention",
+                          y_axis_name = "Cashflow in Ghana Cedis",
+                          color_25_75 = "grey",
+                          color_5_95 = "yellow",
+                          color_median= "red",
+                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 100000))
+
+cashflow_all_things_equal # when all the vital ressources are available
+
+
+cashflow_land_based_plot <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
+              cashflow_var_name = c("improved_seed_land_based", "mineral_fertilizer_land_based", "organic_fertilizer_land_based" , "fertilizer_combination_land_based", "tillage_land_based","complete_ISFM_land_based"),
+                          x_axis_name = "Years of intervention",
+                          y_axis_name = "Cashflow in Ghana Cedis",
+                          color_25_75 = "grey",
+                          color_5_95 = "yellow",
+                          color_median= "red",
+                          base= 10 )+ ggplot2::scale_y_continuous(limits = c(0,100000 ))
+
+cashflow_land_based_plot #renting land and possible litigation 
+
+cashflow_inputs_based_plot <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
+              cashflow_var_name = c("improved_seed_inputs_based", "mineral_fertilizer_inputs_based", "organic_fertilizer_inputs_based" , "fertilizer_combination_inputs_based", "tillage_inputs_based","complete_ISFM_inputs_based"),
+                          x_axis_name = "Years of intervention",
+                          y_axis_name = "Cashflow in Ghana Cedis",
+                          color_25_75 = "grey",
+                          color_5_95 = "yellow",
+                          color_median= "red",
+                          base= 10 )+ ggplot2::scale_y_continuous(limits = c(0, 100000))
+
+cashflow_inputs_based_plot # probability of missing inputs in some years
+
+cashflow_knowledge_based_plot <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
+              cashflow_var_name = c("improved_seed_knowledge_based", "mineral_fertilizer_knowledge_based", "organic_fertilizer_knowledge_based" , "fertilizer_combination_knowledge_based", "tillage_knowledge_based","complete_ISFM_knowledge_based"),
+                          x_axis_name = "Years of intervention",
+                          y_axis_name = "Cashflow in Ghana Cedis",
+                          color_25_75 = "grey",
+                          color_5_95 = "yellow",
+                          color_median= "red",
+                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 100000))
+cashflow_knowledge_based_plot  #no training
+
+
+
+```
+
+**Projection to Latent Structures (PLS)**
+
+We use Projection to Latent Structures (PLS) model to assess the correlation strength and direction for model variables and outcome variables. The Partial Least Squares is fitted with the orthogonal scores algorithm with `pls::plsr`
+
+```{r}
+#To get the names of outcomes needed to run some posthoc test 
+names(ISFM_mc_simulation$y)[1:48] 
+```
+Decide if this will need to be reported and if we need to do pls for the economic part only then transfer code here
+
+
+**Value of information **
+Decide which outcome to assess
+
+
+
+
+
