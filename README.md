@@ -16,7 +16,11 @@ The conceptual model depicts an impact pathway of 5 ISFM components (from a few 
 
 ![zef_impact_pathway](https://github.com/user-attachments/assets/52b6c8f7-5ba2-498b-a7ce-c510244cafb7)
 
-
+Details about the script and model:
+All the functions are stored in a folder called functions. The base model, which includes the built-in variables that will be used for each ISFM component, is in the script ISFM_base_function.R.
+This base function is now passed into the ISFM_components_functions.R. 
+The ISFM_components_functions.R script is used to run the Monte Carlo simulation and other posthoc tests in the Rmarkdown file called posthoc_analysis_index.Rmd.
+Figures and data generated from the posthoc tests are stored in the figures and data folders.
 
 ** REFERENCES **
 
