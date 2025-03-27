@@ -110,9 +110,9 @@ We generate a radar (spider) plot that visualizes trade-offs between ISFM practi
 #install.packages("scales")
 #install.packages("ggplot2")
 
-#library(ggradar)
-#library(ggplot2)
-#library(scales)
+library(ggradar)
+library(ggplot2)
+library(scales)
 
 # We use means to summarize the outcome data for each practice
 ISFM_summary_data <- ISFM_pivoted_outcome_data %>%
