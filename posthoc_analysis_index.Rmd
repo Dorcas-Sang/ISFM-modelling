@@ -49,9 +49,9 @@ The model will answer the following question:
 The impact pathways of ISFM incorporate the costs, the benefits and the risks of each ISFM component for a decade because estimations related to soil are mostly done for a decade so we used this as the basis for our time frame (Guibert, 1999). The impact pathway was translated into a mathematical model and run in montecarlo simulation to find the plausible impact of ISFM and the most economic and sustainable ISFM business model. 
 
 
-# Montecarlo simulation for ISFM benefits and tradeoffs in northern Ghana 
+**Montecarlo simulation for ISFM benefits and tradeoffs in northern Ghana**
 
-Using the pre-built functions for the 6 ISFM decision options, we run an mc simulation  
+Using the pre-built functions for the 6 ISFM decision options, we run a mc simulation  
 
 ```{r mcSimulation, warning=FALSE, size= "huge", message=FALSE}
 # Source our model from the model script
@@ -66,9 +66,6 @@ ISFM_mc_simulation <- mcSimulation(as.estimate(ISFM_table),
                               numberOfModelRuns = 10000,
                               functionSyntax = "plainNames")
 ```
-Landless vs full isfm
-45925 - 923043
-215693 - 589603 
 
 Plotting the different outcomes of the 6 decision options to find the most sustainable and economically viable option of ISFM based on the sustainable intensification assessment framework indicators. The most sustainable and beneficial option will be the one that will be further assessed based on the different farmers typology later. We first arrange the montecarlo simulation data
 
@@ -142,18 +139,18 @@ ISFM_cdf_data <- ISFM_cdf_data %>%
   mutate(
     Outcome_label = case_when(
       Outcome == "productivity" ~ "a. Maize productivity (kg/ha)",
-      Outcome == "income" ~ "b. Maize and soybean income (GHS/ha)",
-      Outcome == "environmental" ~ "c. Environmental benefits (GHS/ha)",
-      Outcome == "social" ~ "d. Social benefits (GHS/ha)",
-      Outcome == "human" ~ "e. Human benefits (GHS/ha)",
+      Outcome == "income" ~ "b. Maize and soybean income (Euro/ha)",
+      Outcome == "environmental" ~ "c. Environmental benefits (Euro/ha)",
+      Outcome == "social" ~ "d. Social benefits (Euro/ha)",
+      Outcome == "human" ~ "e. Human benefits (Euro/ha)",
       TRUE ~ Outcome
     ),
     Outcome_label = factor(Outcome_label, levels = c(
       "a. Maize productivity (kg/ha)",
-      "b. Maize and soybean income (GHS/ha)",
-      "c. Environmental benefits (GHS/ha)",
-      "d. Social benefits (GHS/ha)",
-      "e. Human benefits (GHS/ha)"
+      "b. Maize and soybean income (Euro/ha)",
+      "c. Environmental benefits (Euro/ha)",
+      "d. Social benefits (Euro/ha)",
+      "e. Human benefits (Euro/ha)"
     )),
     Practices = str_replace_all(Practices, "_", " "),
     Practices = str_trim(Practices),
@@ -192,7 +189,7 @@ cdf_ISFM_plot
 ggsave("figures/cdf_ISFM_plot.png", width = 8, height = 10, dpi = 2000)
 
 ```
-
+**Farmers' archetypes **
 
 Further, because farmers are not heterogeneous, they differ based on resources available to them, we identified important resources that could impact ISFM outcomes. We account for them as typology and assess how the most beneficial ISFM is affected by these vital resources. 
 
@@ -300,7 +297,7 @@ ggplot(ISFM_data_long, aes(x = Scenario_label, y = NPV, fill = Scenario_label)) 
   theme_minimal(base_size = 12) +
   labs(
     x = "Scenario",
-    y = "Net Present Value (GHS/ha)"
+    y = "Net Present Value (Euro/ha)"
   ) +
   theme(
     axis.text.x = element_text(angle =45, hjust = 1, 
@@ -314,85 +311,7 @@ ggsave("figures/NPV_ISFM_gender_resource.png", width = 8, height = 8, dpi = 2000
 
 ```
 
-##box plot to delete
-
-```{r}
-# Libraries
-library(tidyverse)       
-library(RColorBrewer)
-
-# Define the ordered list of variable names
-ordered_vars <- c(
-  "NPV_men_ISFM_income",
-  "NPV_women_ISFM_income",
-  "NPV_men_ISFM_income_land_based",
-  "NPV_women_ISFM_income_land_based", 
-  "NPV_men_ISFM_income_inputs_based",
-  "NPV_women_ISFM_income_inputs_based", 
-  "NPV_men_ISFM_income_knowledge_based",
-  "NPV_women_ISFM_income_knowledge_based",
-  "NPV_men_ISFM_income_labor_based",
-  "NPV_women_ISFM_income_labor_based"
-)
-
-# Renaming the variables
-new_labels <- c(
-  "Men's income",
-  "Women's income",
-  "Men’s land-based income",
-  "Women’s land-based income",
-  "Men’s input-based income",
-  "Women’s input-based income",
-  "Men’s knowledge-based income",
-  "Women’s knowlegde-based income",
-  "Men’s labour-based income",
-  "Women’s labour-based income"
-)
-names(new_labels) <- ordered_vars
-
-# Extract data from the mcSimulation object
-ISFM_data_box <- as.data.frame(ISFM_mc_simulation$y)[, ordered_vars]
-
-# Long format + labeled, ordered factor
-ISFM_data_long <- pivot_longer(
-  ISFM_data_box,
-  cols = everything(),
-  names_to = "Scenario",
-  values_to = "NPV"
-) %>%
-  mutate(
-    Scenario_label = factor(new_labels[Scenario], levels = new_labels)
-  )
-
-# Color palette
-palette <- brewer.pal(10, "Paired")
-
-# Box plot
-p <- ggplot(ISFM_data_long, aes(x = Scenario_label, y = NPV, fill = Scenario_label)) +
-  geom_boxplot(
-    width = 0.6,
-    color = "black",
-    outlier.alpha = 0.6,
-    outlier.size = 0.8
-  ) +
-  scale_fill_manual(values = palette) +
-  theme_minimal(base_size = 25) +
-  labs(
-    x = "Scenario",
-    y = "Net Present Value (GHS/ha)"
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 13, face = "bold"),
-    legend.position = "none"
-  )
-
-# Save
-ggsave("figures/NPV_ISFM_gender_resource_box.png", plot = p, width = 8, height = 5, dpi = 1000)
-
-```
-
-
-Baseline and ISFM components cumulative Cashflow projection
+**Baseline and ISFM components Cashflow projection**
 
 ```{r}
 
@@ -412,12 +331,12 @@ ISFM_components_cashflow_plot <- plot_cashflow(
   mcSimulation_object = ISFM_mc_simulation,
   cashflow_var_name   = cashflow_var_name_plot,
   x_axis_name         = "Years",
-  y_axis_name         = "Cash flow (GHS/ha)",
+  y_axis_name         = "Cash flow (Euro/ha)",
   color_5_95          = "blue4",
   color_25_75         = "lightblue",
   color_median        = "red",
   base_size = 40
-)+
+)+  ggplot2::scale_y_continuous(limits = c(0, 15000)) +
 theme(
     axis.text.x = element_text(size = 25, face = "bold"),
     legend.position = "bottom")
@@ -426,148 +345,20 @@ theme(
 readable_labels <- gsub("_", " ", cashflow_var_name_plot)
 names(readable_labels) <- cashflow_var_name_plot
 
-#Apply the new labels to the facet strips
-# Only if the plot uses facet_wrap (most likely from plot_cashflow)
 if ("FacetWrap" %in% class(ISFM_components_cashflow_plot$facet)) {
   ISFM_components_cashflow_plot$facet$params$labeller <- as_labeller(readable_labels)
 } else {
   warning("The plot does not use facet_wrap; unable to apply labeller as expected.")
 }
 
-# 5. Force the facets to one column layout (optional, but usually desirable)
-# Only if facet_wrap was used
 if ("FacetWrap" %in% class(ISFM_components_cashflow_plot$facet)) {
-  ISFM_components_cashflow_plot$facet$params$ncol <- 1
+  ISFM_components_cashflow_plot$facet$params$ncol <- 2
 }
 
 
 # Save the plot
 ggsave("figures/ISFM_components_cashflow_plot.png", width = 15, height = 20, dpi = 1000)
-
 ```
-
-
-Cashflow analysis and plotting based on gender and farming resources (Not used in the paper)
-
-```{r}
-
-ISFM_cashflow_men <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "men_cashflow_ISFM",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_cashflow_men
-
-
-ISFM_cashflow_women <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "women_cashflow_ISFM",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_cashflow_women
-
-
-ISFM_land_cashflow_men <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "men_cashflow_ISFM_land_based",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_land_cashflow_men
-
-ISFM_land_cashflow_women <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "women_cashflow_ISFM_land_based",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_land_cashflow_women
-
-
-ISFM_inputs_cashflow_men <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "men_cashflow_ISFM_inputs_based",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_inputs_cashflow_men
-
-ISFM_inputs_cashflow_women <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "women_cashflow_ISFM_inputs_based",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_inputs_cashflow_women
-
-
-ISFM_knowledge_cashflow_men <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "men_cashflow_ISFM_knowledge_based",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_knowledge_cashflow_men
-
-ISFM_knowledge_cashflow_women <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "women_cashflow_ISFM_knowledge_based",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_knowledge_cashflow_women
-
-
-ISFM_labor_cashflow_men <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "men_cashflow_ISFM_labor_based",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_labor_cashflow_men
-
-ISFM_labor_cashflow_women <- plot_cashflow(mcSimulation_object = ISFM_mc_simulation,
-              cashflow_var_name = "women_cashflow_ISFM_labor_based",
-                          x_axis_name = "Years of intervention",
-                          y_axis_name = "Cashflow in Ghana Cedis",
-                          color_25_75 = "grey",
-                          color_5_95 = "yellow",
-                          color_median= "red",
-                          base= 10 ) + ggplot2::scale_y_continuous(limits = c(0, 2000000))
-
-ISFM_labor_cashflow_women
-
-```
-
 
 **Projection to Latent Structures (PLS)**
 
@@ -643,7 +434,7 @@ all_data <- bind_rows(lapply(plsr_results, function(res) {
     )
 }))
 
-# Group VIP scores into Low/Medium/High
+# Grouping VIP scores into Low/Medium/High
 all_data <- all_data %>%
   mutate(
     vip_category = cut(
@@ -654,7 +445,7 @@ all_data <- all_data %>%
     )
   )
 
-# Plot using the cleaned label
+# Plotting pls
 pls_bubble_plot <- ggplot(all_data, aes(
     x    = VIP,
     y    = reorder(variable_label, VIP),  
@@ -724,61 +515,61 @@ Plotting EVPI
 # Plot all EVPI for the decision variables 
 women_evpi <- plot_evpi(evpi,
           decision_vars = "NPV_women_ISFM_income",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 men_evpi <- plot_evpi(evpi,
           decision_vars = "NPV_men_ISFM_income",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 women_evpi_land <- plot_evpi(evpi,
           decision_vars = "NPV_women_ISFM_income_land_based",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 men_evpi_land <- plot_evpi(evpi,
           decision_vars = "NPV_men_ISFM_income_land_based",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 women_evpi_inputs <- plot_evpi(evpi,
           decision_vars = "NPV_women_ISFM_income_inputs_based",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 men_evpi_inputs <- plot_evpi(evpi,
           decision_vars = "NPV_men_ISFM_income_inputs_based",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 women_evpi_knowledge <- plot_evpi(evpi,
           decision_vars = "NPV_women_ISFM_income_knowledge_based",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 men_evpi_knowledge <- plot_evpi(evpi,
           decision_vars = "NPV_men_ISFM_income_knowledge_based",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 women_evpi_labor <- plot_evpi(evpi,
           decision_vars = "NPV_women_ISFM_income_labor_based",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 
 men_evpi_labor <- plot_evpi(evpi,
           decision_vars = "NPV_men_ISFM_income_labor_based",  
-          unit = "Ghana cedis",
+          unit = "Euro",
           bar_color = "yellow4",
           base_size = 10)
 

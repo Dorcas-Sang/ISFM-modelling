@@ -420,11 +420,9 @@ improved_seed_productivity_NPV <- discount(improved_seed_productivity_raw,
                                       discount_rate = discount_rate, 
                                       calculate_NPV = TRUE)
 
-improved_seed_income_raw <- ((improved_seed$economic_benefits)
-                         - statusquo_income_raw)
-                             
-
-improved_seed_income_NPV <- discount(improved_seed_income_raw, 
+improved_seed_income_raw <- (improved_seed$economic_benefits)
+                         
+improved_seed_income_NPV <- discount(improved_seed_income_raw - statusquo_income_raw, 
                                  discount_rate = discount_rate, 
                                  calculate_NPV = TRUE)
 
@@ -487,10 +485,9 @@ mineral_fertilizer_productivity_NPV <- discount(mineral_fertilizer_productivity_
                                            discount_rate = discount_rate, 
                                            calculate_NPV = TRUE)
 
-mineral_fertilizer_income_raw <- ((mineral_fertilizer$economic_benefits)
-                                  - statusquo_income_raw)
+mineral_fertilizer_income_raw <- (mineral_fertilizer$economic_benefits)
 
-mineral_fertilizer_income_NPV <- discount(mineral_fertilizer_income_raw, 
+mineral_fertilizer_income_NPV <- discount(mineral_fertilizer_income_raw - statusquo_income_raw, 
                                      discount_rate = discount_rate, 
                                      calculate_NPV = TRUE)
 
@@ -559,10 +556,9 @@ organic_fertilizer_productivity_NPV <- discount(organic_fertilizer_productivity_
                                                 discount_rate = discount_rate, 
                                                 calculate_NPV = TRUE)
 
-organic_fertilizer_income_raw <- (((organic_fertilizer$economic_benefits)*organic_amendement_risks)
-                                          - statusquo_income_raw)
-
-organic_fertilizer_income_NPV <- discount(organic_fertilizer_income_raw , 
+organic_fertilizer_income_raw <- ((organic_fertilizer$economic_benefits)*organic_amendement_risks)
+                                          
+organic_fertilizer_income_NPV <- discount(organic_fertilizer_income_raw - statusquo_income_raw , 
                                           discount_rate = discount_rate, 
                                           calculate_NPV = TRUE)
 
@@ -619,14 +615,15 @@ fertilizer_combination_productivity_NPV <- discount(fertilizer_combination_produ
                                                 discount_rate = discount_rate, 
                                                 calculate_NPV = TRUE)
 
-fertilizer_combination_income_raw <- ((fertilizer_combination$economic_benefits)
-                                    - statusquo_income_raw)
-fertilizer_combination_income_NPV <- discount(fertilizer_combination_income_raw, 
+fertilizer_combination_income_raw <- (fertilizer_combination$economic_benefits)
+                                    
+fertilizer_combination_income_NPV <- discount(fertilizer_combination_income_raw - statusquo_income_raw, 
                                           discount_rate = discount_rate, 
                                           calculate_NPV = TRUE)
 
 fertilizer_combination_environmental_raw <- ((fertilizer_combination$environmental_benefits)
                                       - statusquo_environmental_raw)
+
 fertilizer_combination_environmental_NPV <- discount(fertilizer_combination_environmental_raw, 
                                                  discount_rate = discount_rate, 
                                                  calculate_NPV = TRUE)
@@ -676,9 +673,9 @@ minimum_tillage_productivity_NPV <- discount(minimum_tillage_productivity_raw,
                                                     discount_rate = discount_rate, 
                                                     calculate_NPV = TRUE)
 
-minimum_tillage_income_raw <- ((minimum_tillage$economic_benefits)
-                              - statusquo_income_raw)
-minimum_tillage_income_NPV <- discount(minimum_tillage_income_raw , 
+minimum_tillage_income_raw <- (minimum_tillage$economic_benefits)
+                              
+minimum_tillage_income_NPV <- discount(minimum_tillage_income_raw - statusquo_income_raw , 
                                               discount_rate = discount_rate, 
                                               calculate_NPV = TRUE)
 
@@ -732,8 +729,9 @@ complete_isfm_productivity_NPV <- discount(complete_isfm_productivity_raw,
                                              discount_rate = discount_rate, 
                                              calculate_NPV = TRUE)
 
-complete_isfm_income_raw <- ((complete_isfm$economic_benefits)- statusquo_income_raw)
-complete_isfm_income_NPV <- discount(complete_isfm_income_raw , 
+complete_isfm_income_raw <- (complete_isfm$economic_benefits)
+
+complete_isfm_income_NPV <- discount(complete_isfm_income_raw - statusquo_income_raw, 
                                        discount_rate = discount_rate, 
                                        calculate_NPV = TRUE)
 
@@ -980,7 +978,7 @@ return(list(
   Complete_ISFM_social = complete_isfm_social_NPV,
   Complete_ISFM_human = complete_isfm_human_NPV, 
   
-  #Net present values for different farmer archetype
+  #Net present values for complete ISFM on different farmer archetype
   
 NPV_women_ISFM_income = NPV_women_complete_isfm_income,
 NPV_men_ISFM_income = NPV_men_complete_isfm_income,
@@ -1015,11 +1013,9 @@ Fertilizer_combination  = fertilizer_combination_income_raw,
 Minimum_tillage  = minimum_tillage_income_raw,
                                      
 
-Complete_ISFM  = complete_isfm_income_raw ###REMOVE DISCOUNT RATE EVERYWHERE FOR NON NPV.
-                                   #FOR CASHFLOW ONLY 
-                                   ,
+Complete_ISFM  = complete_isfm_income_raw,
 
- # Cashflow complete ISFM when all resources are available 
+# Cashflow complete ISFM when all resources are available 
  
   men_cashflow_ISFM = men_complete_isfm_income, 
   women_cashflow_ISFM = women_complete_isfm_income,

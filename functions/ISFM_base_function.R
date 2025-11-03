@@ -60,16 +60,17 @@ revenue <- ((maize_yield_proportion * maize_price)
         + (soybean_yield_proportion * soybean_price))*market_risks
 
 
-income <- (revenue- total_costs)
-  
+income <- (revenue- total_costs)/13 #to convert from Ghana Cedis to Euro 
+#Rate from 31 october 2025 retrieved from https://www.bog.gov.gh/treasury-and-the-markets/daily-interbank-fx-rates/
+
 soil_health  <- (nutrient_balance_organic_fertilizer +
                 nutrient_balance_mineral_fertilizer +
                 nutrient_balance_fertilizer_combination +
                 reduced_soil_loss + soil_moisture + fixed_nitrogen
                 + soil_organic_carbon + microbial_population +
-                infiltration + weed_suppression) 
+                infiltration + weed_suppression)/13  
   
-social_benefits <- knowledge + schock_resilience + network + agency
+social_benefits <- (knowledge + schock_resilience + network + agency)/13
 
 # nutrition or food availability will depend on income farmers generate from 
 # each practice which determines the purchasing power of farmers to buy food
@@ -79,7 +80,7 @@ nutrition_by_income <- income * nutrition_proportion
              #percentage of income assumed spent on nutrition
   
 human_benefits <- (nutrition_by_income
-                   + reduced_contamination)
+                   + reduced_contamination)/13
   
 # define the outputs of the general function based on the 5 SIAF outcomes
   return(list(productivity = grain_yield,
