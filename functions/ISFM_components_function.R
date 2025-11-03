@@ -297,7 +297,7 @@ agency <- vv(var_mean = training_cost,
   
 ### Human benefits###
 ## The human domain is linked to health and nutrition ##
-##Nutrition will be discount by the revenue farmers generate
+##Nutrition will be discounted by the revenue farmers generate
 #Because food purchasing power depends on the money available
 
 nutrition_proportion_by_income <- vv(nutrition_proportion,
@@ -317,7 +317,7 @@ reduced_contamination <- vv(percent_contamination_reduction * yearly_health_expe
 ## statusquo outcomes
 #Given the context in the statusquo with maize monoculture and no soil amendment
 #we use the exponential decay function on maize yield to account for yield decrease over time
-# Do et al., 2020 (https://doi.org/10.1007/s13593-020-00624-5)
+#Do et al., 2020 (https://doi.org/10.1007/s13593-020-00624-5)
   
 maize_exponential_decay <- function(initial_maize_yield, decay_rate, year) {
     return(initial_maize_yield * exp(-decay_rate * year))}
@@ -357,7 +357,7 @@ statusquo_productivity_NPV <- discount(statusquo_productivity_raw,
                                            calculate_NPV = TRUE)
 
 #here we account for 100% of the land for maize only 
-statusquo_income_raw <- statusquo$economic_benefits
+statusquo_income_raw <- (statusquo$economic_benefits)
 statusquo_income_NPV <- discount(statusquo_income_raw, 
                                            discount_rate = discount_rate, 
                                            calculate_NPV = TRUE)
@@ -377,8 +377,6 @@ statusquo_human_raw <- statusquo$human_benefits
 statusquo_human_NPV <- discount(statusquo_human_raw, 
                                  discount_rate = discount_rate, 
                                  calculate_NPV = TRUE)
-
-
 
 ## ISFM 1 Improved germplasm 
 
@@ -430,14 +428,14 @@ improved_seed_income_NPV <- discount(improved_seed_income_raw,
                                  discount_rate = discount_rate, 
                                  calculate_NPV = TRUE)
 
-improved_seed_environmental_raw <- ((improved_seed$environmental_benefits)
+improved_seed_environmental_raw <- (((improved_seed$environmental_benefits)*soil_degradation)
                                     -statusquo_environmental_raw)
 
 improved_seed_environmental_NPV <- discount(improved_seed_environmental_raw, 
                                  discount_rate = discount_rate, 
                                  calculate_NPV = TRUE)
 
-improved_seed_social_raw <- ((improved_seed$social_benefits)-statusquo_social_raw)
+improved_seed_social_raw <- (improved_seed$social_benefits)
 improved_seed_social_NPV <- discount(improved_seed_social_raw, 
                                  discount_rate = discount_rate, 
                                  calculate_NPV = TRUE)
@@ -502,7 +500,7 @@ mineral_fertilizer_environmental_NPV <- discount(mineral_fertilizer_environmenta
                                             discount_rate = discount_rate, 
                                             calculate_NPV = TRUE)
 
-mineral_fertilizer_social_raw <- ((mineral_fertilizer$social_benefits)- statusquo_social_raw)
+mineral_fertilizer_social_raw <- (mineral_fertilizer$social_benefits)+ 50 ##### remove this
 mineral_fertilizer_social_NPV <- discount(mineral_fertilizer_social_raw, 
                                      discount_rate = discount_rate, 
                                      calculate_NPV = TRUE)
@@ -575,7 +573,7 @@ organic_fertilizer_environmental_NPV <- discount(organic_fertilizer_environmenta
                                                  discount_rate = discount_rate, 
                                                  calculate_NPV = TRUE)
 
-organic_fertilizer_social_raw <- ((organic_fertilizer$social_benefits)- statusquo_social_raw)
+organic_fertilizer_social_raw <- (organic_fertilizer$social_benefits)
 organic_fertilizer_social_NPV <- discount(organic_fertilizer_social_raw, 
                                           discount_rate = discount_rate, 
                                           calculate_NPV = TRUE)
@@ -611,7 +609,7 @@ fertilizer_combination <-
            knowledge= knowledge,
            schock_resilience= schock_resilience,
            network= network,
-           agency= 0,
+           agency= agency,
            nutrition_proportion = nutrition_proportion,
            reduced_contamination= reduced_contamination)  
 
@@ -633,14 +631,14 @@ fertilizer_combination_environmental_NPV <- discount(fertilizer_combination_envi
                                                  discount_rate = discount_rate, 
                                                  calculate_NPV = TRUE)
 
-fertilizer_combination_social_raw <- ((fertilizer_combination$social_benefits)
-                                  - statusquo_social_raw)
+fertilizer_combination_social_raw <- (fertilizer_combination$social_benefits)-10
+                                  
 fertilizer_combination_social_NPV <- discount(fertilizer_combination_social_raw, 
                                           discount_rate = discount_rate, 
                                           calculate_NPV = TRUE)
 
-fertilizer_combination_human_raw <- ((fertilizer_combination$human_benefits)
-                                    - statusquo_human_raw)
+fertilizer_combination_human_raw <- (fertilizer_combination$human_benefits)
+                                     
 
 fertilizer_combination_human_NPV <- discount(fertilizer_combination_human_raw , 
                                          discount_rate = discount_rate, 
@@ -690,8 +688,8 @@ minimum_tillage_environmental_NPV <- discount(minimum_tillage_environmental_raw,
                                                      discount_rate = discount_rate, 
                                                      calculate_NPV = TRUE)
 
-minimum_tillage_social_raw <- ((minimum_tillage$social_benefits)
-                                - statusquo_social_raw)
+minimum_tillage_social_raw <- (minimum_tillage$social_benefits)
+                                
 minimum_tillage_social_NPV <- discount(minimum_tillage_social_raw , 
                                               discount_rate = discount_rate, 
                                               calculate_NPV = TRUE)
@@ -745,7 +743,7 @@ complete_isfm_environmental_NPV <- discount(complete_isfm_environmental_raw,
                                               discount_rate = discount_rate, 
                                               calculate_NPV = TRUE)
 
-complete_isfm_social_raw <- ((complete_isfm$social_benefits)- statusquo_social_raw)
+complete_isfm_social_raw <- (complete_isfm$social_benefits)
 complete_isfm_social_NPV <- discount(complete_isfm_social_raw , 
                                        discount_rate = discount_rate, 
                                        calculate_NPV = TRUE)
@@ -754,6 +752,7 @@ complete_isfm_human_raw <- ((complete_isfm$human_benefits)- statusquo_human_raw)
 complete_isfm_human_NPV <- discount(complete_isfm_human_raw , 
                                       discount_rate = discount_rate, 
                                       calculate_NPV = TRUE)
+
 
 #### Farmers typology based on resources ###
 ## To use the most beneficial ISFM, a farmer must have some vital resources 
@@ -933,51 +932,53 @@ NPV_women_complete_isfm_income_labor_based <- discount(women_complete_isfm_incom
   
 return(list(
   
-  ## We are adding the statusquo so the decision-maker would see what they are comparing ISFM with
+  ## We are adding the baseline/statusquo so the decision-maker would see 
+  #what they are comparing ISFM with
   
-  statusquo_productivity= statusquo_productivity_NPV ,
-  statusquo_income = statusquo_income_NPV, 
-  statusquo_environmental= statusquo_environmental_NPV,
-  statusquo_social = statusquo_social_NPV,
-  statusquo_human = statusquo_human_NPV,
+  Baseline_productivity= statusquo_productivity_NPV ,
+  Baseline_income = statusquo_income_NPV, 
+  Baseline_environmental= statusquo_environmental_NPV,
+  Baseline_social = statusquo_social_NPV,
+  Baseline_human = statusquo_human_NPV,
   
   ##when all resources are available
   
-  improved_seed_productivity= improved_seed_productivity_NPV ,
-  improved_seed_income = improved_seed_income_NPV, 
-  improved_seed_environmental= improved_seed_environmental_NPV,
-  improved_seed_social = improved_seed_social_NPV,
-  improved_seed_human = improved_seed_human_NPV,
+  Improved_seed_productivity= improved_seed_productivity_NPV ,
+  Improved_seed_income = improved_seed_income_NPV, 
+  Improved_seed_environmental= improved_seed_environmental_NPV,
+  Improved_seed_social = improved_seed_social_NPV,
+  Improved_seed_human = improved_seed_human_NPV,
   
-  mineral_fertilizer_productivity = mineral_fertilizer_productivity_NPV,
-  mineral_fertilizer_income = mineral_fertilizer_income_NPV,
-  mineral_fertilizer_environmental= mineral_fertilizer_environmental_NPV,
-  mineral_fertilizer_social = mineral_fertilizer_social_NPV,
-  mineral_fertilizer_human = mineral_fertilizer_human_NPV,
+  Mineral_fertilizer_productivity = mineral_fertilizer_productivity_NPV,
+  Mineral_fertilizer_income = mineral_fertilizer_income_NPV,
+  Mineral_fertilizer_environmental= mineral_fertilizer_environmental_NPV,
+  Mineral_fertilizer_social = mineral_fertilizer_social_NPV,
+  Mineral_fertilizer_human = mineral_fertilizer_human_NPV,
   
-  organic_fertilizer_productivity = organic_fertilizer_productivity_NPV,
-  organic_fertilizer_income = organic_fertilizer_income_NPV,
-  organic_fertilizer_environmental= organic_fertilizer_environmental_NPV,
-  organic_fertilizer_social = organic_fertilizer_social_NPV,
-  organic_fertilizer_human = organic_fertilizer_human_NPV,
+  Organic_fertilizer_productivity = organic_fertilizer_productivity_NPV,
+  Organic_fertilizer_income = organic_fertilizer_income_NPV,
+  Organic_fertilizer_environmental= organic_fertilizer_environmental_NPV,
+  Organic_fertilizer_social = organic_fertilizer_social_NPV,
+  Organic_fertilizer_human = organic_fertilizer_human_NPV,
   
-  fertilizer_combination_productivity = fertilizer_combination_productivity_NPV,
-  fertilizer_combination_income = fertilizer_combination_income_NPV,
-  fertilizer_combination_environmental= fertilizer_combination_environmental_NPV,
-  fertilizer_combination_social = fertilizer_combination_social_NPV,
-  fertilizer_combination_human = fertilizer_combination_human_NPV,
+  Fertilizer_combination_productivity = fertilizer_combination_productivity_NPV,
+  Fertilizer_combination_income = fertilizer_combination_income_NPV,
+  Fertilizer_combination_environmental= fertilizer_combination_environmental_NPV,
+  Fertilizer_combination_social = fertilizer_combination_social_NPV,
+  Fertilizer_combination_human = fertilizer_combination_human_NPV,
   
-  tillage_productivity = minimum_tillage_productivity_NPV,
-  tillage_income = minimum_tillage_income_NPV,
-  tillage_environmental= minimum_tillage_environmental_NPV,
-  tillage_social = minimum_tillage_social_NPV,
-  tillage_human = minimum_tillage_human_NPV,
+  Minimum_tillage_productivity = minimum_tillage_productivity_NPV,
+  Minimum_tillage_income = minimum_tillage_income_NPV, 
+  Minimum_tillage_environmental = minimum_tillage_environmental_NPV, 
+  Minimum_tillage_social = minimum_tillage_social_NPV, 
+  Minimum_tillage_human = minimum_tillage_human_NPV, 
   
-  complete_ISFM_productivity = complete_isfm_productivity_NPV,
-  complete_ISFM_income = complete_isfm_income_NPV,
-  complete_ISFM_environmental= complete_isfm_environmental_NPV,
-  complete_ISFM_social = complete_isfm_social_NPV,
-  complete_ISFM_human = complete_isfm_human_NPV, 
+  
+  Complete_ISFM_productivity = complete_isfm_productivity_NPV,
+  Complete_ISFM_income = complete_isfm_income_NPV,
+  Complete_ISFM_environmental= complete_isfm_environmental_NPV,
+  Complete_ISFM_social = complete_isfm_social_NPV,
+  Complete_ISFM_human = complete_isfm_human_NPV, 
   
   #Net present values for different farmer archetype
   
@@ -992,29 +993,56 @@ NPV_men_ISFM_income_knowledge_based = NPV_men_complete_isfm_income_knowledge_bas
 NPV_women_ISFM_income_labor_based = NPV_women_complete_isfm_income_labor_based,
 NPV_men_ISFM_income_labor_based = NPV_men_complete_isfm_income_labor_based,
 
+
+#ISFM components cashflow
+
+Baseline = statusquo_income_raw,
+                            
+
+Improved_seed = improved_seed_income_raw,
+                                   
+
+Mineral_fertilizer  = mineral_fertilizer_income_raw,
+                                        
+                                        
+Organic_fertilizer  = organic_fertilizer_income_raw,
+                                        
+
+Fertilizer_combination  = fertilizer_combination_income_raw,
+                                            
+
+
+Minimum_tillage  = minimum_tillage_income_raw,
+                                     
+
+Complete_ISFM  = complete_isfm_income_raw ###REMOVE DISCOUNT RATE EVERYWHERE FOR NON NPV.
+                                   #FOR CASHFLOW ONLY 
+                                   ,
+
  # Cashflow complete ISFM when all resources are available 
  
-  men_cashflow_ISFM = cumsum(men_complete_isfm_income), 
-  women_cashflow_ISFM = cumsum(women_complete_isfm_income),
+  men_cashflow_ISFM = men_complete_isfm_income, 
+  women_cashflow_ISFM = women_complete_isfm_income,
   
 # Cashflow based on Land
 
-  men_cashflow_ISFM_land_based =  cumsum(men_complete_isfm_income_land_based),
-  women_cashflow_ISFM_land_based = cumsum(women_complete_isfm_income_land_based),
+  men_cashflow_ISFM_land_based =  men_complete_isfm_income_land_based,
+  women_cashflow_ISFM_land_based = women_complete_isfm_income_land_based,
   
   #Cashflow based on inputs availability
-  men_cashflow_ISFM_inputs_based = cumsum(men_complete_isfm_income_inputs_based),
-  women_cashflow_ISFM_inputs_based = cumsum(women_complete_isfm_income_inputs_based),
+  men_cashflow_ISFM_inputs_based = men_complete_isfm_income_inputs_based,
+  women_cashflow_ISFM_inputs_based = women_complete_isfm_income_inputs_based,
   
   #Cashflow based on knowledge
-  men_cashflow_ISFM_knowledge_based = cumsum(men_complete_isfm_income_knowledge_based),
-  women_cashflow_ISFM_knowledge_based = cumsum(women_complete_isfm_income_knowledge_based),
+  men_cashflow_ISFM_knowledge_based = men_complete_isfm_income_knowledge_based,
+  women_cashflow_ISFM_knowledge_based = women_complete_isfm_income_knowledge_based,
   
   #Cashflow based on labor
- men_cashflow_ISFM_labor_based = cumsum(men_complete_isfm_income_labor_based),
- women_cashflow_ISFM_labor_based = cumsum(women_complete_isfm_income_labor_based)
+ men_cashflow_ISFM_labor_based = men_complete_isfm_income_labor_based,
+ women_cashflow_ISFM_labor_based = women_complete_isfm_income_labor_based
  
 ))
        
 }
+
 

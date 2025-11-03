@@ -33,7 +33,8 @@ outcomes <- function(total_costs,
                     nutrition_proportion= nutrition_proportion, 
                     reduced_contamination) {
 
-grain_yield <- (maize_yield)
+grain_yield <- (maize_yield)* 2.47105 #converted from acre to hectares
+
 # We only compare how much maize yield increase there is compared to the statusquo
 
 #However the revenue is calculated for both maize and the intercrop (soybean)
@@ -48,9 +49,11 @@ grain_yield <- (maize_yield)
 
 land_proportion_maize <- field_area_proportion  # Maize land proportion
 land_proportion_soybean <- 1 - land_proportion_maize # Remaining portion for Soybean
-  
-maize_yield_proportion <- (maize_yield * land_proportion_maize)*production_risks
-soybean_yield_proportion <- (soybean_yield *land_proportion_soybean)*production_risks 
+
+#Convertion of yield from kg/acres to kg/hectares  
+maize_yield_proportion <- ((maize_yield * land_proportion_maize)*production_risks)* 2.47105
+
+soybean_yield_proportion <- ((soybean_yield *land_proportion_soybean)*production_risks)* 2.47105
 
 
 revenue <- ((maize_yield_proportion * maize_price)
