@@ -352,12 +352,12 @@ if ("FacetWrap" %in% class(ISFM_components_cashflow_plot$facet)) {
 }
 
 if ("FacetWrap" %in% class(ISFM_components_cashflow_plot$facet)) {
-  ISFM_components_cashflow_plot$facet$params$ncol <- 2
+  ISFM_components_cashflow_plot$facet$params$ncol <- 7
 }
 
 
 # Save the plot
-ggsave("figures/ISFM_components_cashflow_plot.png", width = 15, height = 20, dpi = 1000)
+ggsave("figures/ISFM_components_cashflow_plot.png", width = 30, height = 10, dpi = 1000)
 ```
 
 **Projection to Latent Structures (PLS)**
