@@ -1,0 +1,624 @@
+---
+title: " Impact pathways and forecast of Integrated Soil Fertility Management in northern Ghana"
+author: "Dorcas, Cory, Javier, Eike"
+date: "2025-05-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("gtExtras")
+#install.packages("svglite")
+#library(gtExtras)
+#library(svglite)
+
+```
+
+**Description**
+Using probabilistic modeling approaches, we are modeling the farm level benefits of Integrated Soil Fertility Management (ISFM), a sustainable intensification practice. ISFM holds promise to improve soil fertility and increase productivity on the already exciting land for small-holder farmers in northern Ghana. ISFM is a set of the following components (below), starting with a few components as partial ISFM until complete ISFM (Vanlawe et al., 2010: https://doi.org/10.5367/0000000107911699)
+
+**Improved seed**
+As an entry point to ISFM, using improved and resilient seed has its own benefits and costs incurred as they are more expensive than the farmers seed. However farmers are aware that these improved seed yield more than their own seed. 
+
+**Inorganic fertilizer**
+Because soils are poor, they need to be replenished with additional nutrients. Using inorganic fertilizer such as NPK and urea on improved seed is the second layer in ISFM. This second layer of ISFM involves additional costs of buying the fertilizer and additional labor for fertilizer application.
+
+**Organic fertilizer**
+This includes using improved seed and the use of already available organic material such as crop residue and animal manure. However farmers are not always able to apply the amount of organic fertilizer needed for sufficient fertilization because the required amount is usually high.
+
+**Fertilizer combination**
+Because each type of fertilizer (organic or inorganic) has its unique characteristic and benefit, combining the two will have synergistic benefits that will be more beneficial than applying one alone on improved seed. Combining them also reduces the amount applied for each compared to when they are applied alone.
+
+**Minimum tillage**
+To avoid the compaction of soil with heavy machinery, tillage is recommended. However in the context of northern Ghana where zero tillage is almost impossible due to long drought and the nature of their soils, minimum tillage is recommended. Here farmers are also advised to avoid using tractors on their soils to tilt the land. 
+
+**Complete ISFM**
+When all the above components are fully adopted simultaneously. 
+
+The 6 different practices are the decision options in a maize and soybean rotation system against the baseline of maize monoculture: 
+1. Use of Improved seed (As the entry point to ISFM)
+2. Improved seed and inorganic fertilizer 
+3. Improved seed and organic fertilizer 
+4. Improved seed and fertilizer combination (half organic and inorganic fertilizer)
+5. Improved seed and minimum tillage
+6. Improved seed, fertilizer combination and minimum tillage (Complete/full ISFM)
+
+The model will answer the following question: 
+**Should Agricultural Research and Development (AR4D) actors promote ISFM in northern Ghana? **
+
+The impact pathways of ISFM incorporate the costs, the benefits and the risks of each ISFM component for a decade because estimations related to soil are mostly done for a decade so we used this as the basis for our time frame (Guibert, 1999). The impact pathway was translated into a mathematical model and run in montecarlo simulation to find the plausible impact of ISFM and the most economic and sustainable ISFM business model. 
+
+
+**Montecarlo simulation for ISFM benefits and tradeoffs in northern Ghana**
+
+Using the pre-built functions for the 6 ISFM decision options, we run a mc simulation  
+
+```{r mcSimulation, warning=FALSE, size= "huge", message=FALSE}
+# Source our model from the model script
+source("functions/ISFM_components_function.R")
+
+# Setting seed to ensure consistent results
+#each time we run the entire simulation 
+set.seed(243) 
+
+ISFM_mc_simulation <- mcSimulation(as.estimate(ISFM_table), 
+                              model_function = ISFM_components_function,
+                              numberOfModelRuns = 10000,
+                              functionSyntax = "plainNames")
+```
+
+Plotting the different outcomes of the 6 decision options to find the most sustainable and economically viable option of ISFM based on the sustainable intensification assessment framework indicators. The most sustainable and beneficial option will be the one that will be further assessed based on the different farmers typology later. We first arrange the Monte Carlo simulation data
+
+```{r Arranging MC data, warning=FALSE, size= "huge", message=FALSE}
+#Arranging the Monte Carlo simulation data first
+library(tidyverse)
+library(tidyr)
+library(stringr)
+
+# Extract values from the simulation output 
+ISFM_impact_data <- ISFM_mc_simulation$y[1:35]
+
+# Pivot the data to long format
+ISFM_pivoted_outcome_data <- tidyr::pivot_longer(ISFM_impact_data,
+                                                 cols = everything(), 
+                                                 names_to = "Outcome with ISFM", 
+                                                 values_to = "Absolute_difference")
+
+# Extract outcome type
+ISFM_pivoted_outcome_data["Outcome"] <- 
+  str_extract(ISFM_pivoted_outcome_data$`Outcome with ISFM`, 
+  "productivity|income|environmental|social|human")
+
+# Extract ISFM practice type by removing the identified outcome from the original column name
+ISFM_pivoted_outcome_data["Practices"] <-  
+  str_remove(ISFM_pivoted_outcome_data$`Outcome with ISFM`, 
+  "productivity|income|environmental|social|human")
+
+```
+
+
+To find the summary of the ISFM outcome data 
+
+```{r Summary of ISFM outcome data, warning=FALSE, message=FALSE}
+library(dplyr)
+
+# Calculate quantiles for the distribution
+ISFM_outcome_bounds <- ISFM_pivoted_outcome_data %>%
+  group_by(Outcome, Practices) %>%
+  summarise(
+    lower_bound = quantile(Absolute_difference, 0.05, na.rm = TRUE),  # 5th percentile for lower bound
+    upper_bound = quantile(Absolute_difference, 0.95, na.rm = TRUE),  # 95th percentile for upper bound
+    min_value = min(Absolute_difference, na.rm = TRUE),               # Minimum value of the distribution
+    max_value = max(Absolute_difference, na.rm = TRUE),               # Maximum value of the distribution
+    mean_value = mean(Absolute_difference, na.rm = TRUE),             # Mean of the distribution
+    sd_value = sd(Absolute_difference, na.rm = TRUE)                  # Standard deviation of the distribution
+  ) %>%
+  ungroup()
+
+ISFM_outcome_bounds
+
+```
+
+
+To assess the stable and most profitable ISFM component under uncertainty we did a stochastic dominance test. 
+Stochastic dominance is a sophisticated comparison of distributions with the dominating distribution being superior in terms of mean, variance, skewness and kurtosis. Stochastic dominance tests help to rank different distributions i.e the superiority of one probability distribution over another https://cran.r-project.org/web/packages/stodom/stodom.pdf. We will only limit to the first oder of dominance where farmers utility is based on maximizing the benefits (more to less).
+In comparision to the Decision Support package, the stochastic dominance method does not directly generate distributions based on uncertainty, but instead, it helps in comparing existing distributions of outcomes to see which one is preferred, based on certain dominance rules. It provides a way to determine whether one option (or distribution) is "better" than another without the need for specific risk preferences or utility functions. We will only test first order stochastic dominance since the scope of our study is only on utility and not on risk analysis.
+
+```{r stochastic dominance test, warning=FALSE, message=FALSE}
+
+# We compute the cumulative probabilities
+ISFM_cdf_data <- ISFM_pivoted_outcome_data %>%
+  filter(!is.na(Absolute_difference)) %>%
+  group_by(Practices, Outcome) %>%
+  arrange(Absolute_difference) %>%
+  mutate(cdf = row_number() / n())
+
+# We first add the units label and reorder the outcomes and practices
+
+ISFM_cdf_data <- ISFM_cdf_data %>%
+  mutate(
+    Outcome_label = case_when(
+      Outcome == "productivity" ~ "a. Maize productivity (kg/ha)",
+      Outcome == "income" ~ "b. Maize and soybean income (Euro/ha)",
+      Outcome == "environmental" ~ "c. Environmental benefits (Euro/ha)",
+      Outcome == "social" ~ "d. Social benefits (Euro/ha)",
+      Outcome == "human" ~ "e. Human benefits (Euro/ha)",
+      TRUE ~ Outcome
+    ),
+    Outcome_label = factor(Outcome_label, levels = c(
+      "a. Maize productivity (kg/ha)",
+      "b. Maize and soybean income (Euro/ha)",
+      "c. Environmental benefits (Euro/ha)",
+      "d. Social benefits (Euro/ha)",
+      "e. Human benefits (Euro/ha)"
+    )),
+    Practices = str_replace_all(Practices, "_", " "),
+    Practices = str_trim(Practices),
+    Practices = factor(Practices, levels = c(
+      "Baseline", 
+      "Improved seed", 
+      "Mineral fertilizer", 
+      "Organic fertilizer",
+      "Fertilizer combination",
+      "Minimum tillage", 
+      "Complete ISFM"
+    ))
+  )
+
+# Plotting the distribution
+cdf_ISFM_plot <-
+  ggplot(ISFM_cdf_data, aes(x = Absolute_difference, y = cdf, color = Practices)) +
+  geom_line(linewidth = 0.7) +
+  facet_wrap(~Outcome_label, scales = "free", ncol = 1, drop = FALSE) +
+  labs(
+    title = " ",
+    x = "Absolute Difference",
+    y = "Cumulative Probability",
+    color = "Practices"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    text = element_text(size = 12),
+    strip.text = element_text(size = 11, face = "bold"),  
+    panel.spacing = unit(1.5, "lines")
+  )
+
+cdf_ISFM_plot
+
+ggsave("figures/cdf_ISFM_plot.png", width = 8, height = 10, dpi = 1500)
+
+```
+
+**Farmers' archetypes **
+
+Further, because farmers are not heterogeneous, they differ based on resources available to them, we identified important resources that could impact ISFM outcomes. We account for them as typology and assess how the most beneficial ISFM is affected by these vital resources. 
+The intersectionality of gender with land, Finance, knowledge and labor were accounted for in our study. 
+Land is a vital resource for farming. However, not every farmer in northern Ghana owns land. Land access is influenced by many factors including mostly socio-economic factors. In northern Ghana, there is also a high probability of land eviction due to land tenure insecurity. Landless farmers will have to rent land or pay with some part of their produce to the landowner every season. This makes land a very volatile asset as its cost will vary highly affecting the outcomes. To account for the effects of land tenure insecurity in our model, we gave the probability of an eviction event starting from the second year of using rented or borrowed land. If eviction happens, land access is zero for the rest of the years in our simulation period, discounting farmers’ profits to zero. In the case of women, other than the eviction probability, the quality of land also matters as they are usually given the least fertile lands. 
+Finance will highly affect the economic outcomes of ISFM because it determines farmers’ purchasing power for agricultural inputs. Only few farmers can afford the inputs at the appropriate time and in adequate quantities. Farmers with low financial power have significantly reduced access to agricultural inputs. This situation is further exacerbated in a season where financial constraints are more pronounced. In situations of high financial constraints, farmers especially women would mostly prioritize household needs over other activities, and this may further affect the quantity and quality of inputs needed for farming. 
+Knowledge is an important resource in the adoption of ISFM. Access or the lack of practical knowledge about ISFM can significantly affect farming outcomes. When farmers are not properly trained, they are likely to make costly mistakes. Further, farmers do not have equal opportunity to access extension services. However, we simulated a learning curve given that farmers learn by doing after making mistakes or learn from peers over time. 
+Shortage of labour can affect the timing of many activities. There are also some activities that are highly gendered which may delay some farmers. Men can cultivate their own land without requiring external help when there is labour shortage. Women on the other hand have additional household activities and care-giving roles that increase pressure on them. In such cases, women need to have more people helping them in the farm so they may need to hire or feed the people helping them. In case this help does not come on time as most farmers are busy at the same time women may miss on the right timing of farming activities. 
+
+
+```{r typology_graph, warning=FALSE, message=FALSE}
+
+factors <- data.frame(
+  Ressources = c("Land", "Agricultural inputs/Financial ressources","Technical skills/knowledge",
+                 "Labor", "Market Linkages", 
+                 "Extension services",
+            "Utilities (electricity, internet)", "Time"),
+  Strength = c(5, 5, 4, 4, 3, 3, 0, 3)
+)
+
+ggplot(factors, aes(x=Strength, y=reorder(Ressources, Strength))) +
+  geom_point(size=5, color="darkgreen") +
+  theme_minimal() +
+  labs(x="Strength", y="Ressources") +
+  geom_segment(aes(xend=0, yend=Ressources), color="lightgray")
+
+ggsave("figures/typology_graph.png", width = 8, height = 5, dpi = 3000)
+
+
+```
+
+Based on these identified farmers' archetypes we present the economic return of full ISFM components (complete adoption) which  encompasses the income based on available resources and gender. We represent this as NPVs and cumulative cashflows depending on the identified vital resources for ISFM: land, agricultural inputs/finance, knowledge, and labor. 
+
+We first find the summary of NPVs based on gender and resources
+
+```{r}
+gender_range_NPV <- (ISFM_mc_simulation$y)[36:45]
+
+intersectionality_NPV_summary_ranges <- gender_range_NPV %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value") %>%
+  group_by(Variable) %>%
+  summarise(
+   `5th Percentile` = quantile(Value, probs = 0.05, na.rm = TRUE), #lower bound
+    `95th Percentile` = quantile(Value, probs = 0.95, na.rm = TRUE), # Upper bound 
+   Min = min(Value, na.rm = TRUE),
+    Max = max(Value, na.rm = TRUE),
+    Median = median(Value, na.rm = TRUE)
+  )
+
+```
+
+Then we plot the Net present value 
+```{r Net Present Value, warning=FALSE, message=FALSE}
+
+library(RColorBrewer)
+
+#Variable order and labels
+ordered_vars <- c(
+  "NPV_men_ISFM_income",
+  "NPV_women_ISFM_income",
+  "NPV_men_ISFM_income_land_based",
+  "NPV_women_ISFM_income_land_based", 
+  "NPV_men_ISFM_income_inputs_based",
+  "NPV_women_ISFM_income_inputs_based", 
+  "NPV_men_ISFM_income_knowledge_based",
+  "NPV_women_ISFM_income_knowledge_based",
+  "NPV_men_ISFM_income_labor_based",
+  "NPV_women_ISFM_income_labor_based"
+)
+
+new_labels <- c(
+  "Men's income",
+  "Women's income",
+  "Men’s land-based income",
+  "Women’s land-based income",
+  "Men’s input-based income",
+  "Women’s input-based income",
+  "Men’s knowledge-based income",
+  "Women’s knowlegde-based income",
+  "Men’s labour-based income",
+  "Women’s labour-based income"
+)
+names(new_labels) <- ordered_vars
+
+# Extracting and reshaping the data
+ISFM_data_violin <- as.data.frame(ISFM_mc_simulation$y)[, ordered_vars]
+
+ISFM_data_long <- ISFM_data_violin %>%
+  pivot_longer(cols = everything(), names_to = "Scenario", values_to = "NPV") %>%
+  mutate(Scenario_label = factor(new_labels[Scenario], levels = new_labels))
+
+# Meta data for gender and resource
+meta <- tibble::tibble(
+  Scenario = ordered_vars,
+  Gender   = c("Men","Women","Men","Women","Men","Women","Men","Women","Men","Women"),
+  Resource = c("Total","Total","Land","Land","Inputs","Inputs","Knowledge","Knowledge","Labour","Labour"),
+  Label    = new_labels
+)
+
+ISFM_plot_df <- ISFM_data_long %>%
+  left_join(meta, by = c("Scenario", "Scenario_label" = "Label")) %>%
+  mutate(
+    Gender   = factor(Gender, levels = c("Men","Women")),
+    Resource = factor(Resource, levels = c("Total","Land","Inputs","Knowledge","Labour"))
+  )
+
+resource_colors <- c(
+  "Total"     = "#bdbdbd",  
+  "Land"      = "#ff7f00",  
+  "Inputs"    = "#4daf4a",  
+  "Knowledge" = "#e41a1c",  
+  "Labour"    = "#377eb8"  
+)
+
+# new names for the legend
+resource_labels <- c(
+  "Total"     = "With all resources",
+  "Land"      = "With land-related issues",
+  "Inputs"    = "With inputs-related issues",
+  "Knowledge" = "With knowledge-related issues",
+  "Labour"    = "With labour-related issues"
+)
+
+#Creating the violin plot
+p_side_by_side <- ggplot(ISFM_plot_df, aes(x = Resource, y = NPV, fill = Resource)) +
+  geom_violin(trim = FALSE, scale = "width", color = "black") +
+  geom_boxplot(width = 0.1, outlier.shape = NA, fill = "white") +
+  facet_wrap(~ Gender, ncol = 2) +
+  scale_fill_manual(
+    values = resource_colors,
+    labels = resource_labels,
+    name = "Scenario"
+  ) +
+  theme_minimal(base_size = 13) +
+  labs(
+    x = NULL,
+    y = "Net Present Value (€/ha)"
+    
+  ) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title.x = element_blank(),
+    legend.position = "right",
+    legend.title = element_text(size = 12, face = "bold"),
+    legend.text = element_text(size = 11),
+    strip.text = element_text(size = 13, face = "bold"),
+    panel.spacing = unit(1, "lines")
+  )
+
+# Save figure
+ggsave("figures/new_NPV_ISFM_gender_resource.png", 
+       p_side_by_side, width = 9, height = 5, dpi = 1500)
+
+```
+
+**Baseline and ISFM components Cashflow projection**
+
+```{r Cashflow projection, warning=FALSE, message=FALSE}
+
+# Original variable names 
+cashflow_var_name_plot <- c(
+  "Baseline", 
+      "Improved_seed", 
+      "Mineral_fertilizer", 
+      "Organic_fertilizer",
+      "Fertilizer_combination",
+      "Minimum_tillage", 
+      "Complete_ISFM"
+)
+
+# cashflow plotting function with correct variable names
+ISFM_components_cashflow_plot <- plot_cashflow(
+  mcSimulation_object = ISFM_mc_simulation,
+  cashflow_var_name   = cashflow_var_name_plot,
+  x_axis_name         = "Years",
+  y_axis_name         = "Cash flow (Euro/ha)",
+  color_5_95          = "blue4",
+  color_25_75         = "lightblue",
+  color_median        = "red",
+  base_size = 35
+)+  ggplot2::scale_y_continuous(limits = c(0, 25000)) +
+theme(
+    axis.text.x = element_text(size = 20, face = "bold"),
+    legend.position = "bottom")
+
+#Remove underscores
+readable_labels <- gsub("_", " ", cashflow_var_name_plot)
+names(readable_labels) <- cashflow_var_name_plot
+
+if ("FacetWrap" %in% class(ISFM_components_cashflow_plot$facet)) {
+  ISFM_components_cashflow_plot$facet$params$labeller <- as_labeller(readable_labels)
+} else {
+  warning("The plot does not use facet_wrap; unable to apply labeller as expected.")
+}
+
+if ("FacetWrap" %in% class(ISFM_components_cashflow_plot$facet)) {
+  ISFM_components_cashflow_plot$facet$params$ncol <- 7
+}
+
+
+# Save the plot
+ggsave("figures/ISFM_components_cashflow_plot.png", width = 33, height = 15, dpi = 1000)
+```
+
+**Projection to Latent Structures (PLS)**
+
+We use Projection to Latent Structures (PLS) model to assess the correlation strength and direction for model variables and outcome variables. The Partial Least Squares is fitted with the orthogonal scores algorithm with `pls::plsr`
+
+```{r}
+#To get the names of outcomes needed to run some posthoc test 
+names(ISFM_mc_simulation$y)[36:45]
+```
+
+Here we only need to use the variables related to complete ISFM since it emerged to be the best ISFM. We remove variables for other ISFM so the correlation does not read the other ISFM components
+
+```{r bubble plot, warning=FALSE, message=FALSE}
+
+# Filter out unwanted input variables
+pls_ISFM_input_variables <- ISFM_table %>%
+  filter(!variable %in% c(
+    "decay_rate", "traditional_maize_seed_price", "maize_yield_statusquo",
+    "maize_yield_component1", "maize_yield_component2",
+    "maize_yield_component3", "maize_yield_component4",
+    "maize_yield_component5", "soybean_yield_component1",
+    "soybean_yield_component2", "soybean_yield_component3", 
+    "soybean_yield_component4", "soybean_yield_component5",
+    "nutrient_partial_balance_value_organic_fertilizer",     
+    "nutrient_partial_balance_value_mineral_fertilizer"
+  ))
+
+# function to calculate VIP scores 
+calculate_vip <- function(pls_model) {
+  W <- pls_model$projection    
+  T <- pls_model$scores     
+  p <- nrow(W)
+  SS <- colSums(T^2) * colSums(pls_model$coefficients^2)
+  vip <- numeric(p)
+  for (j in seq_len(p)) {
+    vip[j] <- sqrt(p * sum((W[j, ]^2) * SS) / sum(SS))
+  }
+  data.frame(variable = rownames(W), VIP = vip, stringsAsFactors = FALSE)
+}
+
+# Run all PLSR simulations
+plsr_results <- list(
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income",ncomp = 1), category = "All Resources",          gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_land_based", ncomp = 1), category = "Land based", gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_inputs_based", ncomp = 1), category = "Inputs based",  gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_knowledge_based", ncomp = 1), category = "Knowledge based", gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_labor_based",  ncomp = 1), category = "Labor based", gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income", ncomp = 1), category = "All Resources",          gender = "Men"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_land_based",     ncomp = 1), category = "Land based",    gender = "Men"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_inputs_based",   ncomp = 1), category = "Inputs based",  gender = "Men"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_knowledge_based", ncomp = 1), category = "Knowledge based", gender = "Men"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_labor_based",   ncomp = 1), category = "Labor based",    gender = "Men")
+)
+
+# Extract VIP & coefficients and filter; create a cleaned label for plotting
+all_data <- bind_rows(lapply(plsr_results, function(res) {
+  vip_df  <- calculate_vip(res$pls)
+  coef_df <- as.data.frame(res$pls$coefficients, stringsAsFactors = FALSE)
+  coef_df$variable <- rownames(coef_df)
+  colnames(coef_df)[1] <- "coefficient"
+  
+  vip_df %>%
+    inner_join(coef_df, by = "variable") %>%
+    filter(variable %in% pls_ISFM_input_variables$variable,
+           VIP >= 1,
+           VIP <= 10) %>%
+    mutate(
+      direction       = ifelse(coefficient > 0, "Positive", "Negative"),
+      abs_VIP         = abs(VIP),
+      category        = res$category,
+      gender          = res$gender,
+      variable_label  = str_replace_all(variable, "_", " ")  
+    )
+}))
+
+# Grouping VIP scores into Low/Medium/High
+all_data <- all_data %>%
+  mutate(
+    vip_category = cut(
+      VIP,
+      breaks = c(1,2, 5, 10),
+      labels = c("Low","Medium","High"),
+      include.lowest = TRUE
+    )
+  )
+
+# Plotting pls
+pls_bubble_plot <- ggplot(all_data, aes(
+    x    = VIP,
+    y    = reorder(variable_label, VIP),  
+    size = vip_category,
+    color= direction
+  )) +
+  geom_point(alpha = 2) +
+  scale_color_manual(values = c("Positive" = "blue", "Negative" = "red")) +
+  scale_size_manual(
+    name   = "VIP Category",
+    values = c("Low" = 2, "Medium"= 5, "High" = 10)
+  ) +
+  facet_grid(gender ~ category, scales = "free_y", space = "free_y") +
+  labs(
+    title = NULL,
+    x     = "VIP Score",
+    y     = "Input Variables",
+    color = "Effect Direction"
+  ) +
+  theme_minimal(base_size = 20) +
+  theme(
+    strip.text.x      = element_text(size = 20, face = "bold"),
+    strip.text.y      = element_text(size = 20, face = "bold"),
+    strip.background  = element_blank(),
+    panel.spacing.y   = unit(1, "cm"),
+    legend.position.inside= c(1.05, 0.5),
+    legend.justification  = c(0, 0.5),
+    legend.box.margin     = margin(0, 20, 0, 0),
+    legend.background     = element_rect(fill = "white"),
+    axis.text.y           = element_text(size = 18)
+  )
+
+ggsave("figures/bubbleplot_ISFM_PLS_by_Resource_and_Gender.png",
+       plot   = pls_bubble_plot,
+       width  = 22,
+       height = 10,
+       dpi    = 1500)
+
+
+```
+
+
+**Value of information **
+Expected Value of Perfect Information (EVPI) 
+This analysis is crucial since it informs the decision-maker how much he/she should be willing to pay if given perfect information, to eliminate uncertainties and avoid opportunity loss.
+
+```{r Value of Information , warning=FALSE, message=FALSE}
+evpi_mcresults_table <- data.frame(ISFM_mc_simulation$x,
+                          ISFM_mc_simulation$y[36:45])
+
+evpi<- multi_EVPI(mc= evpi_mcresults_table,
+                  first_out_var = "NPV_women_ISFM_income", write_table = FALSE, outfolder = ./results/evpi_results)
+
+```
+
+
+
+```{r}
+names(ISFM_mc_simulation$y)[36:45]
+```
+
+
+Plotting EVPI 
+
+```{r plotting EVPI, warning=FALSE, message=FALSE}
+
+# Plot all EVPI for the decision variables 
+women_evpi <- plot_evpi(evpi,
+          decision_vars = "NPV_women_ISFM_income",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+men_evpi <- plot_evpi(evpi,
+          decision_vars = "NPV_men_ISFM_income",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+women_evpi_land <- plot_evpi(evpi,
+          decision_vars = "NPV_women_ISFM_income_land_based",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+men_evpi_land <- plot_evpi(evpi,
+          decision_vars = "NPV_men_ISFM_income_land_based",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+women_evpi_inputs <- plot_evpi(evpi,
+          decision_vars = "NPV_women_ISFM_income_inputs_based",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+men_evpi_inputs <- plot_evpi(evpi,
+          decision_vars = "NPV_men_ISFM_income_inputs_based",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+women_evpi_knowledge <- plot_evpi(evpi,
+          decision_vars = "NPV_women_ISFM_income_knowledge_based",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+men_evpi_knowledge <- plot_evpi(evpi,
+          decision_vars = "NPV_men_ISFM_income_knowledge_based",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+women_evpi_labor <- plot_evpi(evpi,
+          decision_vars = "NPV_women_ISFM_income_labor_based",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+men_evpi_labor <- plot_evpi(evpi,
+          decision_vars = "NPV_men_ISFM_income_labor_based",  
+          unit = "Euro",
+          bar_color = "yellow4",
+          base_size = 10)
+
+women_evpi
+men_evpi
+women_evpi_land
+men_evpi_land
+women_evpi_inputs
+men_evpi_inputs
+women_evpi_knowledge
+men_evpi_knowledge
+women_evpi_labor
+men_evpi_labor
+
+```
+In all cases, there were no variables with a positive EVPI, hence we do not need to plot them.
+

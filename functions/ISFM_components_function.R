@@ -43,16 +43,17 @@ ISFM_components_function <- function(){
 #Crop production risks
 production_risks <- chance_event(production_risks_probability, 
                                    value_if = 1-percentage_production_risk_damage,
-                                   #damage when there is production risk
+                                   #multiplier of yield after damage i.e production*damage
                                    value_if_not = 1,
-                                   n= years)
+                                   n= years) 
+
   
 ## Price and market risks ##
 #probability of Price fluctuation or discounting produce 
 #when production and demand do not meet
 market_risks <- chance_event(market_risks_probability,
                                value_if = 1-percentage_market_risk_damage, 
-                               #damage when there is market risk
+                               #multiplier of profit after damage
                                value_if_not = 1,
                                n= years)
   
@@ -63,7 +64,8 @@ market_risks <- chance_event(market_risks_probability,
 statusquo_inputs_cost <- vv (var_mean = (traditional_maize_seed_price * maize_seed_quantity)
                                + (pesticide_quantity * pesticide_price),
                                var_CV = var_cv,
-                               n= years)
+                               n= years, 
+                             relative_trend = trend)
   
 #With ISFM there is introduction of cereal-legume in a rotation system 
 #Farmers are advised to plant both crops in a season and then rotate field area the following season
@@ -81,13 +83,15 @@ isfm_inputs_cost_vv <- vv (var_mean = (maize_seed + soybean_seed)
     #(information from extension officers)
                              + (pesticide_quantity *pesticide_price),
                              var_CV = var_cv,
-                             n= years)
+                             n= years, 
+                        relative_trend= trend)
   
 #Hired labor for all field related activities other than household force
 labor_cost_per_season <- vv(var_mean= hired_labor, 
                             #hired labor per cropping season
                               var_CV = var_cv,
-                              n= years) 
+                              n= years, 
+                            relative_trend= trend) 
   
 #farmers work a lot so they sometimes have pain and may need to buy painkiller
 medical_bill <- chance_event(sickness_probability,
@@ -99,7 +103,8 @@ medical_bill <- chance_event(sickness_probability,
 isfm_additional_cost_vv <- vv(var_mean = soil_testing,  
                         # highly recommended for resource use efficiency
                                 var_CV = var_cv, 
-                                n= years)
+                                n= years,
+                        relative_trend= trend)
   
 #Land, tools, training are only paid once in our simulation period 
 one_off_payment_isfm <- land_acquisition_price + tools + training_cost
@@ -123,7 +128,8 @@ infrastructure_cost <- vv (var_mean= (transport
                                         + tractor_services_cost), 
                              # for maintenance of the land
                              var_CV = var_cv,
-                             n= years)
+                             n= years, 
+                            relative_trend= trend)
   
 infrastructure_cost_status_quo <- infrastructure_cost + establishment_cost_statusquo
   
@@ -151,7 +157,8 @@ component2_inputs <- vv (var_mean = (fertilizer_quantity_per_acre *
                                          fertilizer_price_per_bag)
                            + fertilizer_application_price_per_acre, 
                            var_CV = var_cv,
-                           n= years)
+                           n= years, 
+                         relative_trend= trend)
   
 total_cost_component2 <- (component2_inputs + standard_costs_ISFM)
   
@@ -173,7 +180,8 @@ total_cost_component2 <- (component2_inputs + standard_costs_ISFM)
 component3_inputs <- vv(compost_preparation_cost  + fertilizer_application_price_per_acre, 
         #Cost of preparing organic fertilizer mixing residue and manure before application
                           var_CV = var_cv,
-                          n= years)
+                          n= years, 
+        relative_trend= trend)
   
 total_cost_component3<- (component3_inputs + standard_costs_ISFM)
   
@@ -193,7 +201,8 @@ total_cost_component4 <- (component4_inputs + standard_costs_ISFM)
   
 tillage_cost <- vv(var_mean = tillage_labor_cost,
                      var_CV = var_cv,
-                     n= years)
+                     n= years, 
+                   relative_trend= trend)
   
 component5_inputs <- (isfm_inputs_cost_vv + isfm_additional_cost_vv 
                         + medical_bill 
@@ -217,43 +226,51 @@ total_cost_component6 <- (total_cost_component5 + component4_inputs)
 nutrient_balance_organic_fertilizer <-
     vv ((nutrient_partial_balance_value_organic_fertilizer * fertilizer_price_per_bag) , 
         var_CV = var_cv, 
-        n= years) # For organic fertilizer
+        n= years, 
+        relative_trend = trend) # For organic fertilizer
   
 nutrient_balance_mineral_fertilizer <-
     vv ((nutrient_partial_balance_value_mineral_fertilizer * fertilizer_price_per_bag) , 
         var_CV = var_cv, 
-        n= years) #For mineral fertilizer
+        n= years, 
+        relative_trend = trend) #For mineral fertilizer
   
 nutrient_balance_fertilizer_combination <-
     vv ((nutrient_partial_balance_value_fertilizer_combination * fertilizer_price_per_bag) , 
         var_CV = var_cv, 
-        n= years)   #Fertilizer combination
+        n= years, 
+        relative_trend = trend)   #Fertilizer combination
   
 ## Soil loss prevention as organic fertilization and minimum tillage improve soil structure ##
 reduced_soil_loss <- vv (saved_soil * price_saved_soil, 
              #amount (kg) of saved soil times the price of saved soil per kg
                            var_CV = var_cv,
-                           n= years)
+                           n= years, 
+             relative_trend = trend)
   
 ## Due to organic fertilizer application there will be high moisture 
 soil_moisture <- vv (liters_water_saved * water_price_per_liter, 
                        var_CV = var_cv, 
-                       n= years)
+                       n= years, 
+                     relative_trend = trend)
   
 ##Biological Nitrogen fixation (BNF) from the soybean##
 fixed_nitrogen <- vv (total_nitrogen_fixed * nitrogen_price, 
                         var_CV = var_cv, 
-                        n= years)
+                        n= years, 
+                      relative_trend = trend)
   
 ## Soil Organic Carbon replenished with the application of organic fertilizer ##
 soil_organic_carbon_replenished <- vv (soil_organic_carbon * carbon_payment, 
                                          var_CV = var_cv, 
-                                         n= years)
+                                         n= years, 
+                                       relative_trend = trend)
   
 ##Soil microbes diversity
 microbial_population <- vv (var_mean = inoculant_price,
                               var_CV = var_cv, 
-                              n= years)
+                              n= years, 
+                            relative_trend = trend)
   
 ##If there is high infiltration rate the inputs will not be washed away. 
 #This rate increases with less stress on the land created by use of tractor 
@@ -261,12 +278,14 @@ microbial_population <- vv (var_mean = inoculant_price,
 #They also save money that they would have otherwise used for tractor services
 infiltration <- vv (tractor_services_cost,
                       var_CV = var_cv,
-                      n= years)
+                      n= years, 
+                    relative_trend = trend)
   
 ## Minimum tillage will reduce incidence of weed hence the need for pesticide##
 weed_suppression <-vv (percentage_weed_reduced * weed_management_price,
                          var_CV = var_cv,
-                         n= years) 
+                         n= years, 
+                       relative_trend = trend) 
   
 ### Social benefits ###
   
@@ -274,26 +293,30 @@ weed_suppression <-vv (percentage_weed_reduced * weed_management_price,
 #for transport to get the training place since farmers are to be trained for free
 knowledge <- vv(var_mean = training_cost, 
                   var_CV = var_cv, 
-                  n= years)
+                  n= years, 
+                relative_trend = trend)
 #less need for insurance 
 #because farmers will use improved seed, good agronomic practices and rotation
 #They will suffer less loss 
 schock_resilience <- vv(insurance_price,
                           var_CV = var_cv,
-                          n= years)
+                          n= years, 
+                        relative_trend = trend)
   
 #Social network: If more farmers are trained and do the same practice, 
 #they can create more activities together that will save them some money. 
 #For example helping each other in farm activities saving on labor cost 
 network <- vv (var_mean = hired_labor,
                  var_CV = var_cv,
-                 n= years)
+                 n= years, 
+               relative_trend = trend)
   
 #When ISFM is mastered, some NGOs empower farmers to teach fellow farmers
 # this comes with some privileges such as being paid to be the instructor 
 agency <- vv(var_mean = training_cost, 
                var_CV = var_cv, 
-               n= years)
+               n= years, 
+             relative_trend = trend)
   
 ### Human benefits###
 ## The human domain is linked to health and nutrition ##
@@ -302,7 +325,8 @@ agency <- vv(var_mean = training_cost,
 
 nutrition_proportion_by_income <- vv(nutrition_proportion,
                             var_CV = var_cv,
-                            n= years)
+                            n= years, 
+                            relative_trend = trend)
 
 ##Reduced leaching due to Less use of mineral fertilizer
 #This leads to reduced expenditure on health matters 
@@ -310,7 +334,8 @@ nutrition_proportion_by_income <- vv(nutrition_proportion,
 #less exposure to respiratory diseases or physical damage from using chemicals 
 reduced_contamination <- vv(percent_contamination_reduction * yearly_health_expenditure,
                               var_CV = var_cv,
-                              n= years) 
+                              n= years, 
+                            relative_trend = trend) 
 
 ## Assigning the variables to each decision##  
   
@@ -325,10 +350,15 @@ maize_exponential_decay <- function(initial_maize_yield, decay_rate, year) {
   statusquo_productivity <- sapply(0:(years-1), function(t) {
     maize_exponential_decay(maize_yield_statusquo, decay_rate, t)
   })
-  
+
+statusquo_productivity_vv <- vv(statusquo_productivity, 
+                                var_CV = var_cv,
+                                n= years, 
+                                relative_trend = trend)
+
 statusquo <-
       outcomes(total_costs= total_cost_statusquo, 
-                       maize_yield= vv (statusquo_productivity, var_cv, years) ,
+                       maize_yield= statusquo_productivity_vv ,
                        soybean_yield= 0,
                        production_risks = production_risks,
                        maize_price= maize_price_per_kg,
@@ -388,10 +418,20 @@ statusquo_human_NPV <- discount(statusquo_human_raw,
 
 soil_degradation<- exp(-seq(0, soil_degradation_damage * years, length.out = years))
 
+maize_yield_1 <- vv(maize_yield_component1, 
+                    var_CV = var_cv,
+                    n= years,
+                    relative_trend = trend)
+                    
+soybean_yield_1 <- vv(soybean_yield_component1, 
+                      var_CV=var_cv, 
+                      n= years,
+                      relative_trend = trend)                    
+                    
 improved_seed <- 
   outcomes(total_costs= total_cost_component1, 
-                       maize_yield= vv(maize_yield_component1, var_cv, years),
-                       soybean_yield= vv(soybean_yield_component1, var_cv, years),
+                       maize_yield= maize_yield_1,
+                       soybean_yield= soybean_yield_1,
                        production_risks = production_risks,
                        maize_price= maize_price_per_kg,
                        soybean_price= soybean_price_per_kg,
@@ -452,11 +492,20 @@ improved_seed_human_NPV <- discount(improved_seed_human_raw,
 #(Johannes K et al. 2015: https://www.boell.de/sites/default/files/WWF_Mineralduenger_englisch_WEB.pdf)
 #(Atakora et al., 2014 : Response of maize growth and development to mineral fertilizer and soil characteristics in Northern Ghana)
 
+maize_yield_2 <- vv(maize_yield_component2, 
+                    var_CV = var_cv,
+                    n= years,
+                    relative_trend = trend)
+
+soybean_yield_2 <- vv(soybean_yield_component2, 
+                      var_CV=var_cv, 
+                      n= years,
+                      relative_trend = trend) 
 
 mineral_fertilizer <- 
      outcomes(total_costs= total_cost_component2, 
-         maize_yield= vv(maize_yield_component2, var_cv, years),
-         soybean_yield= vv(soybean_yield_component2, var_cv, years),
+         maize_yield= maize_yield_2,
+         soybean_yield= soybean_yield_2,
          production_risks = production_risks,
          maize_price= maize_price_per_kg,
          soybean_price= soybean_price_per_kg,
@@ -497,7 +546,7 @@ mineral_fertilizer_environmental_NPV <- discount(mineral_fertilizer_environmenta
                                             discount_rate = discount_rate, 
                                             calculate_NPV = TRUE)
 
-mineral_fertilizer_social_raw <- (mineral_fertilizer$social_benefits)+ 50 ##### remove this
+mineral_fertilizer_social_raw <- (mineral_fertilizer$social_benefits)+5
 mineral_fertilizer_social_NPV <- discount(mineral_fertilizer_social_raw, 
                                      discount_rate = discount_rate, 
                                      calculate_NPV = TRUE)
@@ -524,10 +573,20 @@ organic_amendement_risks <- chance_event(organic_amendment_availability,
                         value_if_not = 1,
                         n= years)
 
+maize_yield_3 <- vv(maize_yield_component3, 
+                    var_CV = var_cv,
+                    n= years,
+                    relative_trend = trend)
+
+soybean_yield_3 <- vv(soybean_yield_component3, 
+                      var_CV=var_cv, 
+                      n= years,
+                      relative_trend = trend) 
+
 organic_fertilizer <- 
   outcomes(total_costs= total_cost_component3, 
-           maize_yield= vv(maize_yield_component3, var_cv, years),
-           soybean_yield= vv(soybean_yield_component3,var_cv, years),
+           maize_yield= maize_yield_3,
+           soybean_yield= soybean_yield_3,
            production_risks = production_risks,
            maize_price= maize_price_per_kg,
            soybean_price= soybean_price_per_kg,
@@ -584,10 +643,20 @@ organic_fertilizer_human_NPV <- discount(organic_fertilizer_human_raw,
 #combining the two will have synergistic benefits that will be more beneficial than applying one alone on improved seed.
 #(Vanlawe et al., 2010: https://doi.org/10.5367/0000000107911699) 
 
+maize_yield_4 <- vv(maize_yield_component4, 
+                    var_CV = var_cv,
+                    n= years,
+                    relative_trend = trend)
+
+soybean_yield_4 <- vv(soybean_yield_component4, 
+                      var_CV=var_cv, 
+                      n= years,
+                      relative_trend = trend) 
+
 fertilizer_combination <- 
   outcomes(total_costs= total_cost_component4, 
-           maize_yield= vv(maize_yield_component4, var_cv, years),
-           soybean_yield= vv(soybean_yield_component4, var_cv, years),
+           maize_yield= maize_yield_4,
+           soybean_yield= soybean_yield_4,
            production_risks = production_risks,
            maize_price= maize_price_per_kg,
            soybean_price= soybean_price_per_kg,
@@ -642,10 +711,20 @@ fertilizer_combination_human_NPV <- discount(fertilizer_combination_human_raw ,
                                          calculate_NPV = TRUE)
 
 ### ISFM 5 minimum tillage ###
+maize_yield_5 <- vv(maize_yield_component5, 
+                    var_CV = var_cv,
+                    n= years,
+                    relative_trend = trend)
+
+soybean_yield_5 <- vv(soybean_yield_component5, 
+                      var_CV=var_cv, 
+                      n= years,
+                      relative_trend = trend) 
+
 minimum_tillage <- 
   outcomes(total_costs= total_cost_component5, 
-           maize_yield= vv(maize_yield_component5, var_cv, years),
-           soybean_yield= vv(soybean_yield_component5, var_cv, years),
+           maize_yield= maize_yield_5,
+           soybean_yield= soybean_yield_5,
            production_risks = production_risks,
            maize_price= maize_price_per_kg,
            soybean_price= soybean_price_per_kg,
@@ -697,10 +776,21 @@ minimum_tillage_human_NPV <- discount(minimum_tillage_human_raw,
                                              discount_rate = discount_rate, 
                                              calculate_NPV = TRUE)
 ### ISFM 6 complete ISFM ###
+
+maize_yield_6 <- vv(maize_yield_component6, 
+                    var_CV = var_cv,
+                    n= years,
+                    relative_trend = trend)
+
+soybean_yield_6 <- vv(soybean_yield_component6, 
+                      var_CV=var_cv, 
+                      n= years,
+                      relative_trend = trend) 
+
 complete_isfm <- 
   outcomes(total_costs= total_cost_component6, 
-           maize_yield= vv(maize_yield_component6, var_cv, years),
-           soybean_yield= vv(soybean_yield_component6, var_cv, years),
+           maize_yield= maize_yield_6,
+           soybean_yield= soybean_yield_6,
            production_risks = production_risks,
            maize_price= maize_price_per_kg,
            soybean_price= soybean_price_per_kg,
@@ -845,6 +935,7 @@ women_income_inputs <- women_complete_isfm_income* wealth_probability
   
 women_complete_isfm_income_inputs_based <- (women_income_inputs
                                             *women_inputs_access_by_financial_power)
+
 NPV_women_complete_isfm_income_inputs_based <- discount(women_complete_isfm_income_inputs_based , 
                                                     discount_rate = discount_rate, 
                                                     calculate_NPV = TRUE)
@@ -978,7 +1069,7 @@ return(list(
   Complete_ISFM_social = complete_isfm_social_NPV,
   Complete_ISFM_human = complete_isfm_human_NPV, 
   
-  #Net present values for complete ISFM on different farmer archetype
+#Net present values for complete ISFM on different farmer archetype
   
 NPV_women_ISFM_income = NPV_women_complete_isfm_income,
 NPV_men_ISFM_income = NPV_men_complete_isfm_income,

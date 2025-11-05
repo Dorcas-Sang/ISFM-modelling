@@ -61,7 +61,7 @@ revenue <- ((maize_yield_proportion * maize_price)
 
 
 income <- (revenue- total_costs)/13 #to convert from Ghana Cedis to Euro 
-#Rate from 31 october 2025 retrieved from https://www.bog.gov.gh/treasury-and-the-markets/daily-interbank-fx-rates/
+#Rate from 31 October 2025 retrieved from https://www.bog.gov.gh/treasury-and-the-markets/daily-interbank-fx-rates/
 
 soil_health  <- (nutrient_balance_organic_fertilizer +
                 nutrient_balance_mineral_fertilizer +
