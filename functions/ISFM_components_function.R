@@ -295,6 +295,7 @@ knowledge <- vv(var_mean = training_cost,
                   var_CV = var_cv, 
                   n= years, 
                 relative_trend = trend)
+
 #less need for insurance 
 #because farmers will use improved seed, good agronomic practices and rotation
 #They will suffer less loss 
@@ -850,7 +851,9 @@ complete_isfm_human_NPV <- discount(complete_isfm_human_raw ,
 #Each for men and women
 
 ### ISFM economic outcomes when all ressources are available ###
-#incidence of domestic violence with ISFM due to crop residue use (Abudlai & Soeters, 2018)
+
+#incidence of domestic violence to the women practicing ISFM due to crop residue use (Abudlai & Soeters, 2018) 
+#and increased income
 
 gender_based_violence <- chance_event(gender_based_violence_probability,
                                       value_if = 1-percentage_gender_based_violence,
@@ -888,7 +891,8 @@ NPV_men_complete_isfm_income_land_based <- discount(men_complete_isfm_income_lan
                                                     calculate_NPV = TRUE)
 
 #In the case of women other than the eviction probability, the quality also matters
-#women get less income on their land compared to what men get due to the status of their land
+#women are usually given the most degraded land and 
+#get less income on their land compared to what men get due to the status of their land
 
 women_income_land <- (women_complete_isfm_income- renting_land_cost)* land_access
 
@@ -952,6 +956,7 @@ knowledge_risk_probability_timed <- seq(knowledge_risk_probability,
                                         knowledge_risk_probability * knowledge_risk_reduction, 
                       #reduction to the risk over time as the knowledge is mastered with practice
                                         length.out = years)
+
 # Adjusting knowledge risk
 knowledge_risk <- chance_event(knowledge_risk_probability_timed, 
                                           value_if = 1 - percentage_knowledge_risk_damage, 
@@ -976,10 +981,22 @@ missed_opportunity <- chance_event(delayed_activity_probability,
                                    value_if_not = 1, 
                                    n = years)
 
+
+# Avoidance of male extenstionists due to personal/cultural norms (Adebayo & Worth, 2022; Manju, 1995)
+
+avoidance_risk_effect <- chance_event(avoidance_probability,
+  value_if     = 1 - avoidance_damage,  
+  value_if_not = 1,                 
+  n = years)
+
+# We apply all effects to the whole income stream #
 women_income_knowledge <- women_complete_isfm_income * knowledge_risk
 
 women_complete_isfm_income_knowledge_based <- (women_income_knowledge
-                                              * missed_opportunity)
+                                               * missed_opportunity
+                                               * avoidance_risk_effect)
+
+
 NPV_women_complete_isfm_income_knowledge_based <- 
                     discount(women_complete_isfm_income_knowledge_based , 
                                       discount_rate = discount_rate, 
@@ -988,7 +1005,7 @@ NPV_women_complete_isfm_income_knowledge_based <-
 ## Based on labor 
 #Shortage of labor can affect timing of most activities
 #Men can manage to do most activities quickly compared to women
-#They are also connected to farmers in other communities where they can pay for additional labor force
+#They are also mostly connected to farmers in other communities where they can get additional labor
 #There also some activities that are highly gendered (wedding, spraying)
 #and are considered male activities so women will again depend on men 
 
@@ -998,8 +1015,9 @@ labor_shortage_risk <- chance_event(labor_access_probability,
                                     n= years)
 
 men_complete_isfm_income_labor_based <- men_complete_isfm_income*labor_shortage_risk
+
 #men can cultivate their own land without requiring external help when there is labor shortage.
-#farming is all they do unlike women who have other additional household activities
+#farming is the only activity a men does in a typical rural home, unlike women who have other additional household activities
 
 NPV_men_complete_isfm_income_labor_based <- discount(men_complete_isfm_income_labor_based , 
                                                     discount_rate = discount_rate, 
