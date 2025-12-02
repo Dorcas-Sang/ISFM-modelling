@@ -32,10 +32,10 @@ outcomes <- function(total_costs,
                     agency,
                     nutrition_proportion= nutrition_proportion, 
                     reduced_contamination) {
-
-grain_yield <- (maize_yield)* 2.47105 #converted from acre to hectares
-
+  
 # We only compare how much maize yield increase there is compared to the statusquo
+  
+grain_yield <- (maize_yield)* 2.47105 #converted from acre to hectares
 
 #However the revenue is calculated for both maize and the intercrop (soybean)
 #Because the yield in ISFM is reported for both maize and soybean each per acre,

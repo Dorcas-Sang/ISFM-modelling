@@ -226,14 +226,18 @@ total_cost_component6 <- (total_cost_component5 + component4_inputs)
 nutrient_balance_organic_fertilizer <-
     vv ((nutrient_partial_balance_value_organic_fertilizer * fertilizer_price_per_bag) , 
         var_CV = var_cv, 
-        n= years, 
-        relative_trend = trend) # For organic fertilizer
-  
+        n= years
+        ) # For organic fertilizer
+
+
+soil_degradation<- exp(-seq(0, soil_degradation_damage * years, length.out = years)) 
+#mineral fertilizer has some antagonistic effect with other soil properties and the nutrient partial balance will be declining with time
+
 nutrient_balance_mineral_fertilizer <-
     vv ((nutrient_partial_balance_value_mineral_fertilizer * fertilizer_price_per_bag) , 
         var_CV = var_cv, 
-        n= years, 
-        relative_trend = trend) #For mineral fertilizer
+        n= years
+        )*soil_degradation #For mineral fertilizer
   
 nutrient_balance_fertilizer_combination <-
     vv ((nutrient_partial_balance_value_fertilizer_combination * fertilizer_price_per_bag) , 
@@ -354,8 +358,7 @@ maize_exponential_decay <- function(initial_maize_yield, decay_rate, year) {
 
 statusquo_productivity_vv <- vv(statusquo_productivity, 
                                 var_CV = var_cv,
-                                n= years, 
-                                relative_trend = trend)
+                                n= years)
 
 statusquo <-
       outcomes(total_costs= total_cost_statusquo, 
@@ -383,9 +386,9 @@ statusquo <-
                        reduced_contamination= reduced_contamination)
 
 statusquo_productivity_raw <- (statusquo$productivity)
-statusquo_productivity_NPV <- discount(statusquo_productivity_raw, 
-                                           discount_rate = discount_rate, 
-                                           calculate_NPV = TRUE)
+statusquo_productivity_NPY <- discount(statusquo_productivity_raw, 
+                                 discount_rate = 0, 
+                                 calculate_NPV = TRUE)/1000 #undiscounted net present yield coverted in tonnes/hectares
 
 #here we account for 100% of the land for maize only 
 statusquo_income_raw <- (statusquo$economic_benefits)
@@ -412,22 +415,18 @@ statusquo_human_NPV <- discount(statusquo_human_raw,
 ## ISFM 1 Improved germplasm 
 
 #crop rotation of improved stress tolerant maize and soybean 
-#(Abdulai & Soeters, 2018: https://www.taylorfrancis.com/chapters/edit/10.4324/9781315149806-9/gendered-analysis-integrated-soil-fertility-management-isfm-strategy-strengthening-adaptive-capacity-ghana-tolon-district-alhassan-lansah-abdulai-sebastiaan-soeters)
-#Nutrient mining happens here due to continuous crop cultivation without adding soil amendment
-#So the yield will decline every year and improved seed will not yield up to their potential
-#(Tittonell and Giller, 2013: https://doi.org/10.1016/j.fcr.2012.10.007)
 
-soil_degradation<- exp(-seq(0, soil_degradation_damage * years, length.out = years))
+#nutrient mining because the soils are not replenished with fertilizers
+
+nutrient_mining<- exp(-seq(0, nutrient_mining_damage * years, length.out = years)) 
 
 maize_yield_1 <- vv(maize_yield_component1, 
                     var_CV = var_cv,
-                    n= years,
-                    relative_trend = trend)
+                    n= years)*nutrient_mining
                     
 soybean_yield_1 <- vv(soybean_yield_component1, 
                       var_CV=var_cv, 
-                      n= years,
-                      relative_trend = trend)                    
+                      n= years) *nutrient_mining                
                     
 improved_seed <- 
   outcomes(total_costs= total_cost_component1, 
@@ -454,12 +453,12 @@ improved_seed <-
                        nutrition_proportion = nutrition_proportion, 
                        reduced_contamination= reduced_contamination)  
 
-improved_seed_productivity_raw <- (((improved_seed$productivity)*soil_degradation)
+improved_seed_productivity_raw <- ((improved_seed$productivity)
                                    - statusquo_productivity_raw)
 
-improved_seed_productivity_NPV <- discount(improved_seed_productivity_raw, 
-                                      discount_rate = discount_rate, 
-                                      calculate_NPV = TRUE)
+improved_seed_productivity_NPY <- discount(improved_seed_productivity_raw, 
+                                            discount_rate = 0, 
+                                            calculate_NPV = TRUE)/1000 #undiscounted net present yield converted in tonnes/hectares
 
 improved_seed_income_raw <- (improved_seed$economic_benefits)
                          
@@ -467,7 +466,7 @@ improved_seed_income_NPV <- discount(improved_seed_income_raw - statusquo_income
                                  discount_rate = discount_rate, 
                                  calculate_NPV = TRUE)
 
-improved_seed_environmental_raw <- (((improved_seed$environmental_benefits)*soil_degradation)
+improved_seed_environmental_raw <- ((improved_seed$environmental_benefits)
                                     -statusquo_environmental_raw)
 
 improved_seed_environmental_NPV <- discount(improved_seed_environmental_raw, 
@@ -495,13 +494,11 @@ improved_seed_human_NPV <- discount(improved_seed_human_raw,
 
 maize_yield_2 <- vv(maize_yield_component2, 
                     var_CV = var_cv,
-                    n= years,
-                    relative_trend = trend)
+                    n= years)*soil_degradation
 
 soybean_yield_2 <- vv(soybean_yield_component2, 
                       var_CV=var_cv, 
-                      n= years,
-                      relative_trend = trend) 
+                      n= years)*soil_degradation 
 
 mineral_fertilizer <- 
      outcomes(total_costs= total_cost_component2, 
@@ -528,12 +525,12 @@ mineral_fertilizer <-
          nutrition_proportion = nutrition_proportion,
          reduced_contamination= 0)  
 
-mineral_fertilizer_productivity_raw <- (((mineral_fertilizer$productivity)*soil_degradation)
+mineral_fertilizer_productivity_raw <- ((mineral_fertilizer$productivity)
                                   - statusquo_productivity_raw)
 
-mineral_fertilizer_productivity_NPV <- discount(mineral_fertilizer_productivity_raw, 
-                                           discount_rate = discount_rate, 
-                                           calculate_NPV = TRUE)
+mineral_fertilizer_productivity_NPY <- discount(mineral_fertilizer_productivity_raw, 
+                                            discount_rate = 0, 
+                                            calculate_NPV = TRUE)/1000 #undiscounted net present yield converted in tonnes/hectares
 
 mineral_fertilizer_income_raw <- (mineral_fertilizer$economic_benefits)
 
@@ -541,8 +538,9 @@ mineral_fertilizer_income_NPV <- discount(mineral_fertilizer_income_raw - status
                                      discount_rate = discount_rate, 
                                      calculate_NPV = TRUE)
 
-mineral_fertilizer_environmental_raw <- (((mineral_fertilizer$environmental_benefits)*soil_degradation)
+mineral_fertilizer_environmental_raw <- ((mineral_fertilizer$environmental_benefits)
                                          -statusquo_environmental_raw)
+
 mineral_fertilizer_environmental_NPV <- discount(mineral_fertilizer_environmental_raw, 
                                             discount_rate = discount_rate, 
                                             calculate_NPV = TRUE)
@@ -565,9 +563,6 @@ mineral_fertilizer_human_NPV <- discount(mineral_fertilizer_human_raw,
 #(Abdulai & Soeters, 2018)
 ## Unavailability of organic amendment as risks to maximum yield 
 #Crop residue and manure contribute to reviving the land, 
-#and since environmental benefits are linked to the land 
-# this unavailability could affect the yield and environmental benefits
-#in components where organic amendment are to be used
 
 organic_amendement_risks <- chance_event(organic_amendment_availability,
                         value_if = 1-percentage_damage_organic_fertilizer_unavailabilty,
@@ -576,13 +571,11 @@ organic_amendement_risks <- chance_event(organic_amendment_availability,
 
 maize_yield_3 <- vv(maize_yield_component3, 
                     var_CV = var_cv,
-                    n= years,
-                    relative_trend = trend)
+                    n= years)*organic_amendement_risks 
 
 soybean_yield_3 <- vv(soybean_yield_component3, 
                       var_CV=var_cv, 
-                      n= years,
-                      relative_trend = trend) 
+                      n= years)*organic_amendement_risks
 
 organic_fertilizer <- 
   outcomes(total_costs= total_cost_component3, 
@@ -609,20 +602,20 @@ organic_fertilizer <-
            nutrition_proportion = nutrition_proportion,
            reduced_contamination= reduced_contamination)  
 
-organic_fertilizer_productivity_raw <- (((organic_fertilizer$productivity)*organic_amendement_risks)
+organic_fertilizer_productivity_raw <- ((organic_fertilizer$productivity)
                               - statusquo_productivity_raw)
 
-organic_fertilizer_productivity_NPV <- discount(organic_fertilizer_productivity_raw, 
-                                                discount_rate = discount_rate, 
-                                                calculate_NPV = TRUE)
+organic_fertilizer_productivity_NPY <- discount(organic_fertilizer_productivity_raw, 
+                                                discount_rate = 0, 
+                                                calculate_NPV = TRUE)/1000 #undiscounted net present yield converted in tonnes/hectares
 
-organic_fertilizer_income_raw <- ((organic_fertilizer$economic_benefits)*organic_amendement_risks)
+organic_fertilizer_income_raw <- (organic_fertilizer$economic_benefits)
                                           
 organic_fertilizer_income_NPV <- discount(organic_fertilizer_income_raw - statusquo_income_raw , 
                                           discount_rate = discount_rate, 
                                           calculate_NPV = TRUE)
 
-organic_fertilizer_environmental_raw <- (((organic_fertilizer$environmental_benefits)*organic_amendement_risks)
+organic_fertilizer_environmental_raw <- ((organic_fertilizer$environmental_benefits)
                                           - statusquo_environmental_raw)
 
 organic_fertilizer_environmental_NPV <- discount(organic_fertilizer_environmental_raw, 
@@ -681,9 +674,10 @@ fertilizer_combination <-
 
 fertilizer_combination_productivity_raw <- ((fertilizer_combination$productivity)
                                             - statusquo_productivity_raw)
-fertilizer_combination_productivity_NPV <- discount(fertilizer_combination_productivity_raw, 
-                                                discount_rate = discount_rate, 
-                                                calculate_NPV = TRUE)
+
+fertilizer_combination_productivity_NPY <- discount(fertilizer_combination_productivity_raw, 
+                                                discount_rate = 0, 
+                                                calculate_NPV = TRUE)/1000 #undiscounted net present yield converted in tonnes/hectares
 
 fertilizer_combination_income_raw <- (fertilizer_combination$economic_benefits)
                                     
@@ -712,15 +706,17 @@ fertilizer_combination_human_NPV <- discount(fertilizer_combination_human_raw ,
                                          calculate_NPV = TRUE)
 
 ### ISFM 5 minimum tillage ###
+# This includes the use of improved seed, less use of machinery and no soil amendment
+#When there is no soil amendment, soil degrades gradually
+
 maize_yield_5 <- vv(maize_yield_component5, 
                     var_CV = var_cv,
-                    n= years,
-                    relative_trend = trend)
+                    n= years)*nutrient_mining
+
 
 soybean_yield_5 <- vv(soybean_yield_component5, 
                       var_CV=var_cv, 
-                      n= years,
-                      relative_trend = trend) 
+                      n= years)*nutrient_mining
 
 minimum_tillage <- 
   outcomes(total_costs= total_cost_component5, 
@@ -747,11 +743,12 @@ minimum_tillage <-
            nutrition_proportion = nutrition_proportion,
            reduced_contamination= reduced_contamination)  
 
-minimum_tillage_productivity_raw <- (((minimum_tillage$productivity)*soil_degradation)
+minimum_tillage_productivity_raw <- ((minimum_tillage$productivity)
                                     - statusquo_productivity_raw)
-minimum_tillage_productivity_NPV <- discount(minimum_tillage_productivity_raw, 
-                                                    discount_rate = discount_rate, 
-                                                    calculate_NPV = TRUE)
+
+minimum_tillage_productivity_NPY  <- discount(minimum_tillage_productivity_raw, 
+                                               discount_rate = 0, 
+                                              calculate_NPV = TRUE)/1000 #undiscounted net present yield converted in tonnes/hectares
 
 minimum_tillage_income_raw <- (minimum_tillage$economic_benefits)
                               
@@ -759,8 +756,9 @@ minimum_tillage_income_NPV <- discount(minimum_tillage_income_raw - statusquo_in
                                               discount_rate = discount_rate, 
                                               calculate_NPV = TRUE)
 
-minimum_tillage_environmental_raw <- (((minimum_tillage$environmental_benefits)*soil_degradation)
+minimum_tillage_environmental_raw <- ((minimum_tillage$environmental_benefits)
                                           - statusquo_environmental_raw)
+
 minimum_tillage_environmental_NPV <- discount(minimum_tillage_environmental_raw, 
                                                      discount_rate = discount_rate, 
                                                      calculate_NPV = TRUE)
@@ -816,9 +814,9 @@ complete_isfm <-
 complete_isfm_productivity_raw <- ((complete_isfm$productivity)
                                    - statusquo_productivity_raw)
 
-complete_isfm_productivity_NPV <- discount(complete_isfm_productivity_raw, 
-                                             discount_rate = discount_rate, 
-                                             calculate_NPV = TRUE)
+complete_isfm_productivity_NPY <- discount(complete_isfm_productivity_raw, 
+                                                  discount_rate = 0, 
+                                                  calculate_NPV = TRUE)/1000 #undiscounted net present yield converted in tonnes/hectares
 
 complete_isfm_income_raw <- (complete_isfm$economic_benefits)
 
@@ -1042,7 +1040,7 @@ return(list(
   ## We are adding the baseline/statusquo so the decision-maker would see 
   #what they are comparing ISFM with
   
-  Baseline_productivity= statusquo_productivity_NPV ,
+  Baseline_productivity= statusquo_productivity_NPY ,
   Baseline_income = statusquo_income_NPV, 
   Baseline_environmental= statusquo_environmental_NPV,
   Baseline_social = statusquo_social_NPV,
@@ -1050,38 +1048,38 @@ return(list(
   
   ##when all resources are available
   
-  Improved_seed_productivity= improved_seed_productivity_NPV ,
+  Improved_seed_productivity= improved_seed_productivity_NPY ,
   Improved_seed_income = improved_seed_income_NPV, 
   Improved_seed_environmental= improved_seed_environmental_NPV,
   Improved_seed_social = improved_seed_social_NPV,
   Improved_seed_human = improved_seed_human_NPV,
   
-  Mineral_fertilizer_productivity = mineral_fertilizer_productivity_NPV,
+  Mineral_fertilizer_productivity = mineral_fertilizer_productivity_NPY,
   Mineral_fertilizer_income = mineral_fertilizer_income_NPV,
   Mineral_fertilizer_environmental= mineral_fertilizer_environmental_NPV,
   Mineral_fertilizer_social = mineral_fertilizer_social_NPV,
   Mineral_fertilizer_human = mineral_fertilizer_human_NPV,
   
-  Organic_fertilizer_productivity = organic_fertilizer_productivity_NPV,
+  Organic_fertilizer_productivity = organic_fertilizer_productivity_NPY,
   Organic_fertilizer_income = organic_fertilizer_income_NPV,
   Organic_fertilizer_environmental= organic_fertilizer_environmental_NPV,
   Organic_fertilizer_social = organic_fertilizer_social_NPV,
   Organic_fertilizer_human = organic_fertilizer_human_NPV,
   
-  Fertilizer_combination_productivity = fertilizer_combination_productivity_NPV,
+  Fertilizer_combination_productivity = fertilizer_combination_productivity_NPY,
   Fertilizer_combination_income = fertilizer_combination_income_NPV,
   Fertilizer_combination_environmental= fertilizer_combination_environmental_NPV,
   Fertilizer_combination_social = fertilizer_combination_social_NPV,
   Fertilizer_combination_human = fertilizer_combination_human_NPV,
   
-  Minimum_tillage_productivity = minimum_tillage_productivity_NPV,
+  Minimum_tillage_productivity = minimum_tillage_productivity_NPY,
   Minimum_tillage_income = minimum_tillage_income_NPV, 
   Minimum_tillage_environmental = minimum_tillage_environmental_NPV, 
   Minimum_tillage_social = minimum_tillage_social_NPV, 
   Minimum_tillage_human = minimum_tillage_human_NPV, 
   
   
-  Complete_ISFM_productivity = complete_isfm_productivity_NPV,
+  Complete_ISFM_productivity = complete_isfm_productivity_NPY,
   Complete_ISFM_income = complete_isfm_income_NPV,
   Complete_ISFM_environmental= complete_isfm_environmental_NPV,
   Complete_ISFM_social = complete_isfm_social_NPV,

@@ -139,19 +139,19 @@ ISFM_cdf_data <- ISFM_pivoted_outcome_data %>%
 ISFM_cdf_data <- ISFM_cdf_data %>%
   mutate(
     Outcome_label = case_when(
-      Outcome == "productivity" ~ "a. Maize productivity (kg/ha)",
+      Outcome == "productivity" ~ "a. Maize productivity (t/ha)",
       Outcome == "income" ~ "b. Maize and soybean income (€/ha)",
-      Outcome == "environmental" ~ "c. Environmental benefits (€/ha)",
-      Outcome == "social" ~ "d. Social benefits (€/ha)",
-      Outcome == "human" ~ "e. Human benefits (€/ha)",
+      Outcome == "environmental" ~ "c. Soil health value (€/ha)",
+      Outcome == "social" ~ "d. Social capital value (€/ha)",
+      Outcome == "human" ~ "e. Health benefits (€/ha)",
       TRUE ~ Outcome
     ),
     Outcome_label = factor(Outcome_label, levels = c(
-      "a. Maize productivity (kg/ha)",
+      "a. Maize productivity (t/ha)",
       "b. Maize and soybean income (€/ha)",
-      "c. Environmental benefits (€/ha)",
-      "d. Social benefits (€/ha)",
-      "e. Human benefits (€/ha)"
+      "c. Soil health value (€/ha)",
+      "d. Social capital value (€/ha)",
+      "e. Health benefits (€/ha)"
     )),
     Practices = str_replace_all(Practices, "_", " "),
     Practices = str_trim(Practices),
@@ -162,8 +162,25 @@ ISFM_cdf_data <- ISFM_cdf_data %>%
       "Fertilizer combination",
       "Minimum tillage", 
       "Complete ISFM"
-    ))
+    )),
+    Practices = case_when(
+      Practices == "Improved seed" ~ "Improved seed (IG)",
+      Practices == "Mineral fertilizer" ~ "IG + Mineral fertilizer",
+      Practices == "Organic fertilizer" ~ "IG + Organic fertilizer",
+      Practices == "Fertilizer combination" ~ "IG + Fertilizer combination",
+      Practices == "Minimum tillage" ~ "IG + Minimum tillage",
+      Practices == "Complete ISFM" ~ "Complete ISFM",
+      TRUE ~ Outcome), 
+
+  Practices= factor(Practices, levels = c(
+  "Improved seed (IG)", 
+      "IG + Mineral fertilizer", 
+      "IG + Organic fertilizer",
+      "IG + Fertilizer combination",
+      "IG + Minimum tillage", 
+      "Complete ISFM"))
   )
+
 
 # Plotting the distribution
 cdf_ISFM_plot <-
@@ -172,7 +189,7 @@ cdf_ISFM_plot <-
   facet_wrap(~Outcome_label, scales = "free", ncol = 1, drop = FALSE) +
   labs(
     title = " ",
-    x = "Net present Yield / Net Present Value",
+    x = "Absolute difference",
     y = "Cumulative Probability",
     color = "Practices"
   ) +
@@ -190,42 +207,11 @@ ggsave("figures/cdf_ISFM_plot.png", width = 8, height = 10, dpi = 1500)
 
 ```
 
-**Farmers' archetypes **
-
-Further, because farmers are not heterogeneous, they differ based on resources available to them, we identified important resources that could impact ISFM outcomes. We account for them as typology and assess how the most beneficial ISFM is affected by these vital resources. 
-The intersectionality of gender with land, Finance, knowledge and labor were accounted for in our study. 
-Land is a vital resource for farming. However, not every farmer in northern Ghana owns land. Land access is influenced by many factors including mostly socio-economic factors. In northern Ghana, there is also a high probability of land eviction due to land tenure insecurity. Landless farmers will have to rent land or pay with some part of their produce to the landowner every season. This makes land a very volatile asset as its cost will vary highly affecting the outcomes. To account for the effects of land tenure insecurity in our model, we gave the probability of an eviction event starting from the second year of using rented or borrowed land. If eviction happens, land access is zero for the rest of the years in our simulation period, discounting farmers’ profits to zero. In the case of women, other than the eviction probability, the quality of land also matters as they are usually given the least fertile lands. 
-Finance will highly affect the economic outcomes of ISFM because it determines farmers’ purchasing power for agricultural inputs. Only few farmers can afford the inputs at the appropriate time and in adequate quantities. Farmers with low financial power have significantly reduced access to agricultural inputs. This situation is further exacerbated in a season where financial constraints are more pronounced. In situations of high financial constraints, farmers especially women would mostly prioritize household needs over other activities, and this may further affect the quantity and quality of inputs needed for farming. 
-Knowledge is an important resource in the adoption of ISFM. Access or the lack of practical knowledge about ISFM can significantly affect farming outcomes. When farmers are not properly trained, they are likely to make costly mistakes. Further, farmers do not have equal opportunity to access extension services. However, we simulated a learning curve given that farmers learn by doing after making mistakes or learn from peers over time. 
-Shortage of labour can affect the timing of many activities. There are also some activities that are highly gendered which may delay some farmers. Men can cultivate their own land without requiring external help when there is labour shortage. Women on the other hand have additional household activities and care-giving roles that increase pressure on them. In such cases, women need to have more people helping them in the farm so they may need to hire or feed the people helping them. In case this help does not come on time as most farmers are busy at the same time women may miss on the right timing of farming activities. 
-
-
-```{r typology_graph, warning=FALSE, message=FALSE}
-
-factors <- data.frame(
-  Ressources = c("Land", "Agricultural inputs/Financial ressources","Technical skills/knowledge",
-                 "Labor", "Market Linkages", 
-                 "Extension services",
-            "Utilities (electricity, internet)", "Time"),
-  Strength = c(5, 5, 4, 4, 3, 3, 0, 3)
-)
-
-ggplot(factors, aes(x=Strength, y=reorder(Ressources, Strength))) +
-  geom_point(size=5, color="darkgreen") +
-  theme_minimal() +
-  labs(x="Strength", y="Ressources") +
-  geom_segment(aes(xend=0, yend=Ressources), color="lightgray")
-
-ggsave("figures/typology_graph.png", width = 8, height = 5, dpi = 3000)
-
-
-```
-
-Based on these identified farmers' archetypes we present the economic return of full ISFM components (complete adoption) which  encompasses the income based on available resources and gender. We represent this as NPVs and cumulative cashflows depending on the identified vital resources for ISFM: land, agricultural inputs/finance, knowledge, and labor. 
+Based on these identified farmers' archetypes we present the economic return of full ISFM components (complete adoption) which  encompasses the income based on available resources and gender. We represent this as NPVs and cashflows depending on the identified vital resources for ISFM: land, agricultural inputs/finance, knowledge, and labor. 
 
 We first find the summary of NPVs based on gender and resources
 
-```{r}
+```{r Intersectionality NPV ranges, warning=FALSE, message=FALSE}
 gender_range_NPV <- (ISFM_mc_simulation$y)[36:45]
 
 intersectionality_NPV_summary_ranges <- gender_range_NPV %>%
@@ -342,16 +328,16 @@ p_side_by_side <- ggplot(ISFM_plot_df, aes(x = Resource, y = NPV, fill = Resourc
 
 # Save figure
 ggsave("figures/new_NPV_ISFM_gender_resource.png", 
-       p_side_by_side, width = 9, height = 3, dpi = 1500)
+       p_side_by_side, width = 8, height = 5, dpi = 1500)
 
 ```
 
 
-**Baseline and ISFM components Cashflow projection**
+**Baseline and ISFM components Cash flow projection**
 
 ```{r Cashflow projection, warning=FALSE, message=FALSE}
 
-#library(patchwork)
+library(patchwork)
 
 cashflow_var_name_plot <- c(
   "Baseline", 
@@ -367,6 +353,18 @@ cashflow_var_name_plot <- c(
 readable_labels <- gsub("_", " ", cashflow_var_name_plot)
 names(readable_labels) <- cashflow_var_name_plot
 
+# new names for the legend
+readable_labels <- c(
+   "Baseline" = "Baseline", 
+  "Improved_seed"= "Improved seed (IG)",
+  "Mineral_fertilizer"= "IG + Mineral fertilizer", 
+  "Organic_fertilizer" = "IG + Organic fertilizer",
+  "Fertilizer_combination"= "IG + Fert. combination",
+  "Minimum_tillage" = "IG + Minimum tillage", 
+  "Complete_ISFM" = "IG + complete ISFM"
+)
+
+
 # Left quadrant with the Baseline only
 baseline_cashflow <- plot_cashflow(
   mcSimulation_object = ISFM_mc_simulation,
@@ -376,11 +374,12 @@ baseline_cashflow <- plot_cashflow(
   color_5_95          = "blue4",
   color_25_75         = "lightblue",
   color_median        = "red",
-  base_size           = 45
+  base_size           = 35
 ) +
   scale_x_continuous(breaks = c(1, 5, 10), expand = expansion(mult = c(0, 0))) +
+  scale_y_continuous(limits = c(-300, 300)) +
   theme(
-    strip.text.x = element_text(size = 40, face = "bold"),
+    strip.text.x = element_text(size = 35, face = "bold"),
     axis.text.x  = element_text(size = 40, face = "bold"),
     axis.text.y  = element_text(size = 40),
     axis.title.x = element_text(size = 40, face = "bold"),
@@ -401,12 +400,12 @@ ISFM_cashflow <- plot_cashflow(
   color_5_95          = "blue4",
   color_25_75         = "lightblue",
   color_median        = "red",
-  base_size           = 45
+  base_size           = 35
 ) +
   scale_x_continuous(breaks = c(1, 5, 10), expand = expansion(mult = c(0, 0))) +
-  scale_y_continuous(limits = c(0, 35000)) +
+  scale_y_continuous(limits = c(-1000, 35000)) +
   theme(
-    strip.text.x = element_text(size = 40, face = "bold"),
+    strip.text.x = element_text(size = 35, face = "bold"),
     axis.text.x  = element_text(size = 40),
     axis.text.y  = element_text(size = 40),
     axis.title.x = element_text(size = 40, face = "bold"),
@@ -429,8 +428,7 @@ cashflow_combined_plot <- (
   plot_layout(widths = c(1, 3), guides = "collect")
 ) &
   labs(x = "Years", y = "Cash flow (Euro/ha)") &
-  theme(
-    text          = element_text(size = 40, family = "serif"),
+  theme( text = element_text(size = 40, family = "serif"),
     legend.position = "right",
     legend.title  = element_text(size = 40),
     legend.text   = element_text(size = 40),
@@ -455,12 +453,14 @@ ISFM_implimentation_level_income<- ISFM_mc_simulation$y %>%
 ```
 
 
-```{r}
+```{r ISFM implimentation levels Projection to Latent Structure, warning=FALSE, message=FALSE}
 
-# function to calculate VIP scores 
+library(dplyr)
+
+#VIP function 
 calculate_vip <- function(pls_model) {
-  W <- pls_model$projection    
-  T <- pls_model$scores     
+  W <- pls_model$projection      
+  T <- pls_model$scores
   p <- nrow(W)
   SS <- colSums(T^2) * colSums(pls_model$coefficients^2)
   vip <- numeric(p)
@@ -470,105 +470,123 @@ calculate_vip <- function(pls_model) {
   data.frame(variable = rownames(W), VIP = vip, stringsAsFactors = FALSE)
 }
 
-# Run all PLSR simulations
-plsr_results <- list(
-  pls = plsr.mcSimulation(ISFM_mc_simulation, "Improved_seed_income",ncomp = 1), 
-   pls = plsr.mcSimulation(ISFM_mc_simulation, "Mineral_fertilizer_income",ncomp = 1),
-      pls = plsr.mcSimulation(ISFM_mc_simulation, "Organic_fertilizer_income",ncomp = 1), 
-   pls = plsr.mcSimulation(ISFM_mc_simulation, "Fertilizer_combination_income",ncomp = 1),
-    pls = plsr.mcSimulation(ISFM_mc_simulation, "Minimum_tillage_income",ncomp = 1), 
-   pls = plsr.mcSimulation(ISFM_mc_simulation, "Complete_ISFM_income",ncomp = 1)
-       )
+# ISFM implementation levels to evaluate 
+outcomes <- c(
+  "Improved_seed_income",
+  "Mineral_fertilizer_income",
+  "Organic_fertilizer_income",
+  "Fertilizer_combination_income",
+  "Minimum_tillage_income",
+  "Complete_ISFM_income"
+)
 
-# Extract VIP & coefficients and filter; create a cleaned label for plotting
-all_data <- bind_rows(lapply(plsr_results, function(res) {
-  vip_df  <- calculate_vip(res$pls)
+plsr_results <- lapply(outcomes, function(y) {
+  list(
+    outcome = y,
+    pls     = plsr.mcSimulation(ISFM_mc_simulation, y)
+  )
+})
+
+#Extracting VIP scores and the coefficients
+all_data <- dplyr::bind_rows(lapply(plsr_results, function(res) {
+  vip_df  <- calculate_vip(res$pls) |>
+    dplyr::mutate(outcome = res$outcome)
+
   coef_df <- as.data.frame(res$pls$coefficients, stringsAsFactors = FALSE)
   coef_df$variable <- rownames(coef_df)
-  colnames(coef_df)[1] <- "coefficient"
-  
-  vip_df %>%
-    inner_join(coef_df, by = "variable") %>%
-    filter(variable %in% ISFM_table$variable,
-           VIP >= 1,
-           VIP <= 10) %>%
-    mutate(
-      direction       = ifelse(coefficient > 0, "Positive", "Negative"),
-      abs_VIP         = abs(VIP),
-      category        = res$category,
-      gender          = res$gender,
-      variable_label  = str_replace_all(variable, "_", " ")  
+  names(coef_df)[1] <- "coefficient"
+
+  dplyr::inner_join(vip_df, coef_df, by = "variable") |>
+    dplyr::filter(variable %in% ISFM_table$variable,
+                  VIP >= 1, VIP <= 10) |>
+    dplyr::mutate(
+      direction      = ifelse(coefficient > 0, "Positive", "Negative"),
+      abs_VIP        = abs(VIP),
+      variable_label = stringr::str_replace_all(variable, "_", " ")
     )
 }))
 
-# Grouping VIP scores into Low/Medium/High
-all_data <- all_data %>%
-  mutate(
+#Grouping VIP scores into Low/Medium/High
+all_data <- all_data |>
+  dplyr::mutate(
     vip_category = cut(
       VIP,
-      breaks = c(1,2, 5, 10),
-      labels = c("Low","Medium","High"),
-      include.lowest = TRUE
+      breaks = c(1, 2, 5, 10),
+      labels = c("Low", "Medium", "High"),
+      include.lowest = TRUE,
+      right = TRUE
     )
   )
 
-# Plotting pls
-pls_bubble_plot <- ggplot(all_data, aes(
-    x    = VIP,
-    y    = reorder(variable_label, VIP),  
-    size = vip_category,
-    color= direction
-  )) +
-  geom_point(alpha = 2) +
-  scale_color_manual(values = c("Positive" = "blue", "Negative" = "red")) +
-  scale_size_manual(
+# Removing underscores on practices names 
+practice_labels <- c(
+  Improved_seed_income           = "Improved seed",
+  Mineral_fertilizer_income      = "Mineral fertilizer",
+  Organic_fertilizer_income      = "Organic fertilizer",
+  Fertilizer_combination_income  = "Fertilizer combination",
+  Minimum_tillage_income         = "Minimum tillage",
+  Complete_ISFM_income           = "Complete ISFM"
+)
+
+all_data <- all_data |>
+  dplyr::mutate(outcome_label = dplyr::recode(outcome, !!!practice_labels))
+
+#Plotting the pls in bubble plot format
+pls_bubble_plot <- ggplot2::ggplot(
+  all_data,
+  ggplot2::aes(x = VIP, y = reorder(variable_label, VIP), size = vip_category, color = direction)
+) +
+  ggplot2::geom_point(alpha = 0.8) +
+  ggplot2::scale_color_manual(values = c("Positive" = "blue", "Negative" = "red")) +
+  ggplot2::scale_size_manual(
     name   = "VIP Category",
-    values = c("Low" = 2, "Medium"= 5, "High" = 10)
+    values = c("Low" = 2, "Medium" = 5, "High" = 10),
+    guide  = ggplot2::guide_legend(override.aes = list(alpha = 1))
   ) +
-  facet_grid(gender ~ category, scales = "free_y", space = "free_y") +
-  labs(
+  ggplot2::facet_wrap(~ outcome_label, ncol = 3, scales = "free_y") +
+  ggplot2::labs(
     title = NULL,
-    x     = "VIP Score",
-    y     = "Input Variables",
+    x = "VIP Score",
+    y = "Input Variables",
     color = "Effect Direction"
   ) +
-  theme_minimal(base_size = 20) +
-  theme(
-    strip.text.x      = element_text(size = 20, face = "bold"),
-    strip.text.y      = element_text(size = 20, face = "bold"),
-    strip.background  = element_blank(),
-    panel.spacing.y   = unit(1, "cm"),
-    legend.position.inside= c(1.05, 0.5),
-    legend.justification  = c(0, 0.5),
-    legend.box.margin     = margin(0, 20, 0, 0),
-    legend.background     = element_rect(fill = "white"),
-    axis.text.y           = element_text(size = 20)
+  ggplot2::theme_minimal(base_size = 14, base_family = "Times New Roman") +
+  ggplot2::theme(
+    strip.text        = ggplot2::element_text(size = 14, face = "bold"),
+    strip.background  = ggplot2::element_blank(),
+    panel.spacing     = grid::unit(8, "mm"),
+    legend.position   = "bottom",
+    legend.box        = "horizontal",
+    legend.title      = ggplot2::element_text(size = 14),
+    legend.text       = ggplot2::element_text(size = 14),
+    axis.text.x       = ggplot2::element_text(size = 14),
+    axis.text.y       = ggplot2::element_text(size = 14),
+    axis.title.x      = ggplot2::element_text(size = 14),
+    axis.title.y      = ggplot2::element_text(size = 14)
   )
 
-ggsave("figures/bubbleplot_ISFM_PLS_by_Resource_and_Gender.png",
-       plot   = pls_bubble_plot,
-       width  = 22,
-       height = 30,
-       dpi    = 1500)
-
-
-
+ggsave("figures/bubbleplot_ISFM_levels_PLS.png",
+  plot     = pls_bubble_plot,
+  width    = 12,   
+  height   = 16,
+  dpi      = 500
+)
 
 ```
 
+Pls of ISFM and interectionality results
 
-
+Here we only need to use the variables related to complete ISFM since it emerged to be the best ISFM. We remove variables for other ISFM so the correlation does not read the other ISFM components
 
 ```{r}
 #To get the names of outcomes needed to run some posthoc test 
 ISFM_intersectionality_income <- names(ISFM_mc_simulation$y)[36:45]
 ```
 
-Here we only need to use the variables related to complete ISFM since it emerged to be the best ISFM. We remove variables for other ISFM so the correlation does not read the other ISFM components
-
 ```{r bubble plot, warning=FALSE, message=FALSE}
+# Removing variables that are not used in the intersectionality analysis
+#These variables are related to other components of ISFM, while intersectionality analysis focused on the most beneficial ISFM (Complete ISFM)
 
-# Filter out unwanted input variables
 pls_ISFM_input_variables <- ISFM_table %>%
   filter(!variable %in% c(
     "decay_rate", "traditional_maize_seed_price", "maize_yield_statusquo",
@@ -581,7 +599,7 @@ pls_ISFM_input_variables <- ISFM_table %>%
     "nutrient_partial_balance_value_mineral_fertilizer"
   ))
 
-# function to calculate VIP scores 
+#function to calculate VIP scores 
 calculate_vip <- function(pls_model) {
   W <- pls_model$projection    
   T <- pls_model$scores     
@@ -597,18 +615,18 @@ calculate_vip <- function(pls_model) {
 # Run all PLSR simulations
 plsr_results <- list(
   list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income",ncomp = 1), category = "All Resources",          gender = "Women"),
-  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_land_based", ncomp = 1), category = "Land constraints", gender = "Women"),
-  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_inputs_based", ncomp = 1), category = "Inputs constraints",  gender = "Women"),
-  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_knowledge_based", ncomp = 1), category = "Knowledge constraints", gender = "Women"),
-  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_labor_based",  ncomp = 1), category = "Labour constraints", gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_land_based", ncomp = 1), category = "Land", gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_inputs_based", ncomp = 1), category = "Inputs",  gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_knowledge_based", ncomp = 1), category = "Knowledge", gender = "Women"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_women_ISFM_income_labor_based",  ncomp = 1), category = "Labour", gender = "Women"),
   list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income", ncomp = 1), category = "All Resources",          gender = "Men"),
-  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_land_based",     ncomp = 1), category = "Land constraints",    gender = "Men"),
-  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_inputs_based",   ncomp = 1), category = "Inputs constraints",  gender = "Men"),
-  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_knowledge_based", ncomp = 1), category = "Knowledge constraints", gender = "Men"),
-  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_labor_based",   ncomp = 1), category = "Labour constraints",    gender = "Men")
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_land_based",     ncomp = 1), category = "Land",    gender = "Men"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_inputs_based",   ncomp = 1), category = "Inputs",  gender = "Men"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_knowledge_based", ncomp = 1), category = "Knowledge", gender = "Men"),
+  list(pls = plsr.mcSimulation(ISFM_mc_simulation, "NPV_men_ISFM_income_labor_based",   ncomp = 1), category = "Labour",    gender = "Men")
 )
 
-# Extract VIP & coefficients and filter; create a cleaned label for plotting
+# Extract VIP & coefficients and create a clean label for the practices that will be used for plotting
 all_data <- bind_rows(lapply(plsr_results, function(res) {
   vip_df  <- calculate_vip(res$pls)
   coef_df <- as.data.frame(res$pls$coefficients, stringsAsFactors = FALSE)
@@ -647,12 +665,17 @@ pls_bubble_plot <- ggplot(all_data, aes(
     size = vip_category,
     color= direction
   )) +
-  geom_point(alpha = 2) +
+  geom_point(alpha = 1) +
   scale_color_manual(values = c("Positive" = "blue", "Negative" = "red")) +
   scale_size_manual(
     name   = "VIP Category",
-    values = c("Low" = 2, "Medium"= 5, "High" = 10)
+    values = c("Low" = 10, "Medium"= 15, "High" = 20)
   ) +
+  guides(
+    color = guide_legend(
+      override.aes = list(size = 10)
+    )
+  )+
   facet_grid(gender ~ category, scales = "free_y", space = "free_y") +
   labs(
     title = NULL,
@@ -660,124 +683,29 @@ pls_bubble_plot <- ggplot(all_data, aes(
     y     = "Input Variables",
     color = "Effect Direction"
   ) +
-  theme_minimal(base_size = 20) +
+  theme_minimal(base_size = 45) +
   theme(
-    strip.text.x      = element_text(size = 20, face = "bold"),
-    strip.text.y      = element_text(size = 20, face = "bold"),
+    strip.text.x      = element_text(size = 50, face = "bold"),
+    strip.text.y      = element_text(size = 55, face = "bold"),
     strip.background  = element_blank(),
-    panel.spacing.y   = unit(1, "cm"),
+    panel.spacing.y   = unit(2.0, "cm"),
     legend.position.inside= c(1.05, 0.5),
     legend.justification  = c(0, 0.5),
     legend.box.margin     = margin(0, 20, 0, 0),
     legend.background     = element_rect(fill = "white"),
-    axis.text.y           = element_text(size = 20)
+    axis.text.y           = element_text(size = 55), 
+    axis.text.x  = element_text(size = 55),
+    axis.title.x = element_text(size = 55, face = "bold"),
+    axis.title.y = element_text(size = 55, face = "bold"),
+    plot.margin  = margin(t = 15, r = 15, b = 15, l = 15, unit = "pt") +
+                   margin(t = 0, r = 0, b = 0, l = 2.0, unit = "cm"),
   )
 
 ggsave("figures/bubbleplot_ISFM_PLS_by_Resource_and_Gender.png",
        plot   = pls_bubble_plot,
-       width  = 22,
+       width  = 45,
        height = 30,
-       dpi    = 1500)
+       dpi    = 500)
 
 ```
-
-
-**Value of information **
-Expected Value of Perfect Information (EVPI) 
-This analysis is crucial since it informs the decision-maker how much he/she should be willing to pay if given perfect information, to eliminate uncertainties and avoid opportunity loss.
-
-```{r Value of Information , warning=FALSE, message=FALSE}
-evpi_mcresults_table <- data.frame(ISFM_mc_simulation$x,
-                          ISFM_mc_simulation$y[36:45])
-
-evpi<- multi_EVPI(mc= evpi_mcresults_table,
-                  first_out_var = "NPV_women_ISFM_income", write_table = FALSE, outfolder = ./results/evpi_results)
-
-```
-
-
-
-```{r}
-names(ISFM_mc_simulation$y)[36:45]
-```
-
-
-Plotting EVPI 
-
-```{r plotting EVPI, warning=FALSE, message=FALSE}
-
-# Plot all EVPI for the decision variables 
-women_evpi <- plot_evpi(evpi,
-          decision_vars = "NPV_women_ISFM_income",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-men_evpi <- plot_evpi(evpi,
-          decision_vars = "NPV_men_ISFM_income",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-women_evpi_land <- plot_evpi(evpi,
-          decision_vars = "NPV_women_ISFM_income_land_based",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-men_evpi_land <- plot_evpi(evpi,
-          decision_vars = "NPV_men_ISFM_income_land_based",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-women_evpi_inputs <- plot_evpi(evpi,
-          decision_vars = "NPV_women_ISFM_income_inputs_based",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-men_evpi_inputs <- plot_evpi(evpi,
-          decision_vars = "NPV_men_ISFM_income_inputs_based",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-women_evpi_knowledge <- plot_evpi(evpi,
-          decision_vars = "NPV_women_ISFM_income_knowledge_based",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-men_evpi_knowledge <- plot_evpi(evpi,
-          decision_vars = "NPV_men_ISFM_income_knowledge_based",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-women_evpi_labor <- plot_evpi(evpi,
-          decision_vars = "NPV_women_ISFM_income_labor_based",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-men_evpi_labor <- plot_evpi(evpi,
-          decision_vars = "NPV_men_ISFM_income_labor_based",  
-          unit = "Euro",
-          bar_color = "yellow4",
-          base_size = 10)
-
-women_evpi
-men_evpi
-women_evpi_land
-men_evpi_land
-women_evpi_inputs
-men_evpi_inputs
-women_evpi_knowledge
-men_evpi_knowledge
-women_evpi_labor
-men_evpi_labor
-
-```
-In all cases, there were no variables with a positive EVPI, hence we do not need to plot them.
 
