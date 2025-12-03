@@ -19,21 +19,50 @@ Using probabilistic modeling approaches, we are modeling the farm level benefits
 
 **Improved seed**
 As an entry point to ISFM, using improved and resilient seed has its own benefits and costs incurred as they are more expensive than the farmers seed. However farmers are aware that these improved seed yield more than their own seed. 
+```{r echo=FALSE, fig.cap="Improved seed", fig.align='center', out.width="60%"}
+knitr::include_graphics("figures/improved seed_ISFM1.png")
+
+```
 
 **Inorganic fertilizer**
 Because soils are poor, they need to be replenished with additional nutrients. Using inorganic fertilizer such as NPK and urea on improved seed is the second layer in ISFM. This second layer of ISFM involves additional costs of buying the fertilizer and additional labor for fertilizer application.
 
+```{r echo=FALSE, fig.cap="Mineral fertilizer", fig.align='center', out.width="60%"}
+knitr::include_graphics("figures/Mineral fertilizer_ISFM2.png")
+
+```
+
 **Organic fertilizer**
 This includes using improved seed and the use of already available organic material such as crop residue and animal manure. However farmers are not always able to apply the amount of organic fertilizer needed for sufficient fertilization because the required amount is usually high.
+
+```{r echo=FALSE, fig.cap="Organic fertilizer", fig.align='center', out.width="60%"}
+knitr::include_graphics("figures/Organic fertilizer ISFM3.png")
+
+```
 
 **Fertilizer combination**
 Because each type of fertilizer (organic or inorganic) has its unique characteristic and benefit, combining the two will have synergistic benefits that will be more beneficial than applying one alone on improved seed. Combining them also reduces the amount applied for each compared to when they are applied alone.
 
+```{r echo=FALSE, fig.cap="Fertilizer combination", fig.align='center', out.width="60%"}
+knitr::include_graphics("figures/Fertilizer combination_ISFM4.png")
+
+```
+
 **Minimum tillage**
 To avoid the compaction of soil with heavy machinery, tillage is recommended. However in the context of northern Ghana where zero tillage is almost impossible due to long drought and the nature of their soils, minimum tillage is recommended. Here farmers are also advised to avoid using tractors on their soils to tilt the land. 
 
+```{r echo=FALSE, fig.cap="Minimum tillage", fig.align='center', out.width="60%"}
+knitr::include_graphics("figures/Minimum tillage_ISFM5.png")
+
+```
+
 **Complete ISFM**
 When all the above components are fully adopted simultaneously. 
+```{r echo=FALSE, fig.cap="Complete ISFM", fig.align='center', out.width="60%"}
+knitr::include_graphics("figures/Complete ISFM.png")
+
+```
+
 
 The 6 different practices are the decision options in a maize and soybean rotation system against the baseline of maize monoculture: 
 1. Use of Improved seed (As the entry point to ISFM)
@@ -46,12 +75,11 @@ The 6 different practices are the decision options in a maize and soybean rotati
 The model will answer the following question: 
 **Should Agricultural Research and Development (AR4D) actors promote ISFM in northern Ghana? **
 
-The impact pathways of ISFM incorporate the costs, the benefits and the risks of each ISFM component for a decade because estimations related to soil are mostly done for a decade so we used this as the basis for our time frame (Guibert, 1999). The impact pathway was translated into a mathematical model and run in montecarlo simulation to find the plausible impact of ISFM and the most economic and sustainable ISFM business model. 
+The impact pathways of ISFM incorporate the costs, the benefits and the risks of each ISFM component for a decade because estimations related to soil are mostly done for a decade so we used this as the basis for our time frame (Guibert, 1999). The impact pathway was translated into a mathematical model and run in Monte Carlo simulation to find the plausible impact of ISFM and the most economic and sustainable ISFM business model. 
 
+**Monte Carlo simulation for ISFM benefits and trade-offs in northern Ghana**
 
-**Montecarlo simulation for ISFM benefits and tradeoffs in northern Ghana**
-
-Using the pre-built functions for the 6 ISFM decision options, we run a mc simulation  
+Using the pre-built functions for the 6 ISFM decision options, we run a MC simulation  
 
 ```{r mcSimulation, warning=FALSE, size= "huge", message=FALSE}
 # Source our model from the model script
@@ -115,8 +143,6 @@ ISFM_outcome_bounds <- ISFM_pivoted_outcome_data %>%
     sd_value = sd(Absolute_difference, na.rm = TRUE)                  # Standard deviation of the distribution
   ) %>%
   ungroup()
-
-ISFM_outcome_bounds
 
 ```
 
@@ -201,13 +227,11 @@ cdf_ISFM_plot <-
     panel.spacing = unit(1.5, "lines")
   )
 
-cdf_ISFM_plot
-
 ggsave("figures/cdf_ISFM_plot.png", width = 8, height = 10, dpi = 1500)
 
 ```
 
-Based on these identified farmers' archetypes we present the economic return of full ISFM components (complete adoption) which  encompasses the income based on available resources and gender. We represent this as NPVs and cashflows depending on the identified vital resources for ISFM: land, agricultural inputs/finance, knowledge, and labor. 
+Based on these identified farmers' archetypes we present the economic return of complete ISFM (complete adoption) which  encompasses the income based on available resources and gender. We represent this as NPVs depending on the identified vital resources for ISFM: land, agricultural inputs/finance, knowledge, and labour. 
 
 We first find the summary of NPVs based on gender and resources
 
@@ -434,6 +458,7 @@ cashflow_combined_plot <- (
     legend.text   = element_text(size = 40),
     strip.text.x  = element_text(size = 40, face = "bold")
   )
+
 ggsave("figures/ISFM_components_cashflow_plot.png",
        plot   = cashflow_combined_plot,
        width  = 33, height = 15, dpi = 1000)
@@ -447,7 +472,7 @@ We use Projection to Latent Structures (PLS) model to assess the correlation str
 
 #For ISFM implimentation level
 
-```{r}
+```{r pls data ISFM components, warning=FALSE, message=FALSE}
 ISFM_implimentation_level_income<- ISFM_mc_simulation$y %>%
   select(7, 12, 17, 22, 27, 32)
 ```
@@ -578,12 +603,12 @@ Pls of ISFM and interectionality results
 
 Here we only need to use the variables related to complete ISFM since it emerged to be the best ISFM. We remove variables for other ISFM so the correlation does not read the other ISFM components
 
-```{r}
+```{r pls data intersectionality, warning=FALSE, message=FALSE}
 #To get the names of outcomes needed to run some posthoc test 
 ISFM_intersectionality_income <- names(ISFM_mc_simulation$y)[36:45]
 ```
 
-```{r bubble plot, warning=FALSE, message=FALSE}
+```{r Pls bubble plot, warning=FALSE, message=FALSE}
 # Removing variables that are not used in the intersectionality analysis
 #These variables are related to other components of ISFM, while intersectionality analysis focused on the most beneficial ISFM (Complete ISFM)
 
@@ -659,7 +684,7 @@ all_data <- all_data %>%
   )
 
 # Plotting pls
-pls_bubble_plot <- ggplot(all_data, aes(
+pls_bubble_plot_intersectionality <- ggplot(all_data, aes(
     x    = VIP,
     y    = reorder(variable_label, VIP),  
     size = vip_category,
@@ -702,7 +727,7 @@ pls_bubble_plot <- ggplot(all_data, aes(
   )
 
 ggsave("figures/bubbleplot_ISFM_PLS_by_Resource_and_Gender.png",
-       plot   = pls_bubble_plot,
+       plot   = pls_bubble_plot_intersectionality,
        width  = 45,
        height = 30,
        dpi    = 500)
